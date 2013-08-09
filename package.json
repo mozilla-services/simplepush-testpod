@@ -1,0 +1,5 @@
+{
+    "name": "simplepushtester",
+    "description": "simulates simplepush clients and servers",
+    "repository": "https://github.com/oremj/simplepushtester.git"
+}
