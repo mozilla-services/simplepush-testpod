@@ -11,4 +11,9 @@ program
 
 
 c = new Client('localhost:8080');
+c.registerChannel("abcde");
+c.registerChannel("abcd2");
+c.registerChannel("abcd3");
+c.registerChannel("abcd4");
+c.registerChannel("abcdr");
 c.start();
