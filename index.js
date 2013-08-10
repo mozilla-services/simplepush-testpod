@@ -20,15 +20,11 @@ program
 var server = new Server(program.minpingtime, program.maxpingtime,
                         program.pingsperchannel);
 
-function reg(m) {
-    server.registerEndpoint(m);
-}
-
 for (i=0; i < program.clients; i++) {
     var c = new Client(program.pushgoserver);
     for(j=0; j < program.channels; j++) {
         c.registerChannel(uuid.v1());
     }
-    c.on('pushendpoint', reg);
+    server.registerClient(c);
     c.start();
 }
