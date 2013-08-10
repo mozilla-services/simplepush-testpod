@@ -6,14 +6,16 @@ var events = require('events'),
 
 program
     .version('0.0.1a')
-    .option('-s, --pushgoserver', 'Push go server url, e.g., pushserver.test.com')
+    .option('-s, --pushgoserver <server>', 'Push go server url, e.g., pushserver.test.com', 'push.services.mozilla.com')
+    .option('-c, --clients <clients>', 'Number of client connections', Number, 1)
+    .option('-C, --channels <channels>', 'Number of channels per client', Number, 1)
     .parse(process.argv);
 
 
-c = new Client('localhost:8080');
-c.registerChannel("abcde");
-c.registerChannel("abcd2");
-c.registerChannel("abcd3");
-c.registerChannel("abcd4");
-c.registerChannel("abcdr");
-c.start();
+for (i=0; i < program.clients; i++) {
+    var c = new Client(program.pushgoserver);
+    for(j=0; j < program.channels; j++) {
+        c.registerChannel(i.toString());
+    }
+    c.start();
+}
