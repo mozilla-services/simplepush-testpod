@@ -1,10 +1,5 @@
-var events = require('events'),
-    program = require('commander'),
-    WebSocket = require('ws'),
-    util = require('util'),
-    uuid = require('node-uuid'),
-    Client = require('./lib/Client'),
-    Server = require('./lib/Server');
+var program = require('commander'),
+    TestController = require('./lib/TestController');
 
 program
     .version('0.0.1a')
@@ -17,14 +12,6 @@ program
     .parse(process.argv);
 
 
-var server = new Server(program.minpingtime, program.maxpingtime,
-                        program.pingsperchannel);
 
-for (i=0; i < program.clients; i++) {
-    var c = new Client(program.pushgoserver);
-    for(j=0; j < program.channels; j++) {
-        c.registerChannel(uuid.v1());
-    }
-    server.registerClient(c);
-    c.start();
-}
+var test = new TestController(program);
+test.run();
