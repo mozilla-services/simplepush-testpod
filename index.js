@@ -2,7 +2,9 @@ var events = require('events'),
     program = require('commander'),
     WebSocket = require('ws'),
     util = require('util'),
-    Client = require('./lib/Client');
+    uuid = require('node-uuid'),
+    Client = require('./lib/Client'),
+    Server = require('./lib/Server');
 
 program
     .version('0.0.1a')
@@ -12,10 +14,17 @@ program
     .parse(process.argv);
 
 
+var server = new Server();
+
+function reg(m) {
+    server.registerEndpoint(m);
+}
+
 for (i=0; i < program.clients; i++) {
     var c = new Client(program.pushgoserver);
     for(j=0; j < program.channels; j++) {
-        c.registerChannel(i.toString());
+        c.registerChannel(uuid.v1());
     }
+    c.on('pushendpoint', reg);
     c.start();
 }
