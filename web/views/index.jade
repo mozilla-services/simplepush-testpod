@@ -3,6 +3,7 @@ html
     head
         title SimplePush Test Pod
         link(rel="stylesheet", href="/css/main.css")
+        script(data-main="/js/app", src="/js/lib/require.js")
     
     body
         h1 Server: some.host.name
@@ -11,8 +12,9 @@ html
 
         table.stats
             tr
-                td.stat Connected
-                td 2500
+                td.stat WebSockets connected
+                td.num
+                    span#conn_current --
 
         h3 Connection Stats
         table.stats
@@ -22,16 +24,42 @@ html
                 th Fail
                 th Success Rate
             tr
-                td 10000
-                td 9900
-                td 100 
-                td 99%
+                td.num
+                    span#conn_attempted --
+                td.num
+                    span#conn_ok --
+                td.num
+                    span#conn_fail --
+                td.num
+                    span#conn_rate --
+                    span %
 
         h3 Connection Lifetime
 
+
+        table.stats
+            tr
+                th 5s
+                th 15s
+                th 30s
+                th 1m
+                th 2m
+                th 5m
+                th &gt; 10m
+            tr
+                td.num 1%
+                td.num 10%
+                td.num 25%
+                td.num 10%
+                td.num 5%
+                td.num 1%
+                td.num 1%
+
         p.about 
-            | This is a measure of how long connections stay open until
-            | they are unexpected interrupted or terminated
+            strong Note: 
+            | These are buckets with time measurements of how long socket connections
+            | are able to stay connected for. 
+
 
         h2 Ping Statistics
         table.stats
@@ -41,10 +69,16 @@ html
                 th Timeout
                 th Success Rate
             tr
-                td 1000
-                td 900
-                td 100
-                td 90%
+                td.num
+                    span#ping_sent
+                td.num
+                    span#ping_received
+                td.num
+                    span#ping_timeout
+                td.num
+                    span#ping_rate
+                    span %
+
 
 
 
