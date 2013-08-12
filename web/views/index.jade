@@ -1,0 +1,53 @@
+doctype 5
+html
+    head
+        title SimplePush Test Pod
+        link(rel="stylesheet", href="/css/main.css")
+    
+    body
+        h1 Server: some.host.name
+
+        h2 Websocket Statistics
+
+        table.stats
+            tr
+                td.stat Connected
+                td 2500
+
+        h3 Connection Stats
+        table.stats
+            tr
+                th Attempted
+                th OK
+                th Fail
+                th Success Rate
+            tr
+                td 10000
+                td 9900
+                td 100 
+                td 99%
+
+        h3 Connection Lifetime
+
+        p.about 
+            | This is a measure of how long connections stay open until
+            | they are unexpected interrupted or terminated
+
+        h2 Ping Statistics
+        table.stats
+            tr
+                th Sent
+                th Received
+                th Timeout
+                th Success Rate
+            tr
+                td 1000
+                td 900
+                td 100
+                td 90%
+
+
+
+
+
+
