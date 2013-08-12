@@ -57,4 +57,6 @@ if (require.main === module) {
         }
         console.log("App listening on " + port);
     });
+} else {
+    exports.startup = startup;
 }
