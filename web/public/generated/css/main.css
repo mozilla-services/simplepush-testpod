@@ -1,4 +1,5 @@
 table.stats {
+  margin: 0.5em 0 0.5em 0;
   border-collapse: collapse;
 }
 table.stats td,

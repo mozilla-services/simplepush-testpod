@@ -36,7 +36,6 @@ html
 
         h3 Connection Lifetime
 
-
         table.stats
             tr
                 th 5s
@@ -79,9 +78,33 @@ html
                     span#ping_rate
                     span %
 
+        h3 Ping latencies
 
+        table.stats
+            tr
+                th 50ms
+                th 100ms
+                th 500ms
+                th 1000ms
+                th 1500ms
+                th 3000ms
+                th 3000ms
+            tr
+                td.num 1%
+                td.num 10%
+                td.num 25%
+                td.num 10%
+                td.num 5%
+                td.num 1%
+                td.num 1%
 
-
-
-
+        table.stats
+            tr
+                td.stat average
+                td.num 
+                    span#response_avg 0
+            tr
+                td.stat median
+                td.num 
+                    span#response_med 0
 
