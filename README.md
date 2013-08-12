@@ -21,3 +21,7 @@ Statistics are collected for:
     * Succesful / Failed handshake w/ push server
     * Notifications expected + recieved
     * Push latency, time between AppServer sending push and Client receiving it
+
+
+## Debug Output
+* To print debug output, run like `DEBUG=* node index.js`.
