@@ -3,8 +3,9 @@
     "description": "simulates simplepush clients and servers",
     "repository": "https://github.com/oremj/simplepushtester.git",
     "dependencies": {
-        "ws": "0.4.x",
         "commander": "2.0.x",
-        "node-uuid": "1.4.x"
+        "debug": "0.7.x",
+        "node-uuid": "1.4.x",
+        "ws": "0.4.x"
     }
 }
