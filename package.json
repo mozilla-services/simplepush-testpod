@@ -5,7 +5,9 @@
     "dependencies": {
         "commander": "2.0.x",
         "debug": "0.7.x",
+        "moment": "2.1.x",
         "node-uuid": "1.4.x",
+        "underscore": "1.5.x",
         "ws": "0.4.x"
     }
 }
