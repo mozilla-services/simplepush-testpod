@@ -1,5 +1,7 @@
 var program = require('commander'),
-    TestController = require('./lib/TestController');
+    TestController = require('./lib/TestController'),
+    debug = require('debug'),
+    webserver = require('./webserver');
 
 program
     .version('0.0.1a')
@@ -12,6 +14,13 @@ program
     .parse(process.argv);
 
 
-
 var test = new TestController(program);
 test.run();
+
+webserver.startup(function(err, server) {
+    debug('webserver')("Webserver listening on " + server.address().port);
+
+    setInterval(function() {
+        server.emit('stats', test.getInfo());
+    }, 1000);
+});
