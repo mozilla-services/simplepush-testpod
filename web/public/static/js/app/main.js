@@ -48,4 +48,37 @@ define([
 
         }
     });
+
+
+    // startup a websocket connection
+    var ws;
+    var connectInterval = 1000;
+
+    function startWS() {
+        ws = new WebSocket("ws://"+window.location.hostname + ":" + window.location.port);
+        ws.onerror = function(e) {
+            console.log("WS error", e);
+        };
+
+        ws.onopen = function(e) {
+            console.log("Websocket Open")
+            connectInterval = 1000;
+        };
+
+        ws.onmessage = function(e) {
+            console.log(e.data);
+        };
+
+        ws.onclose = function() {
+            console.log("WS Waiting ", connectInterval, " before reconnecting");
+            setTimeout(startWS, connectInterval);
+        }
+
+        connectInterval = Math.floor((connectInterval*1.5));
+    }
+
+
+    startWS();
+   
+
 });

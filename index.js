@@ -17,6 +17,6 @@ program
 var test = new TestController(program);
 test.run();
 
-webserver.startup(function(err, port) {
-    debug('webserver')("Webserver listening on " + port);
+webserver.startup(function(err, server) {
+    debug('webserver')("Webserver listening on " + server.address().port);
 });

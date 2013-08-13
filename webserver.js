@@ -2,7 +2,10 @@ const
     express = require('express')
     , fs = require('fs')
     , stylus = require('stylus')
-    , nib = require('nib');
+    , nib = require('nib')
+    , http = require('http')
+    , WebSocketServer = require('ws').Server;
+
 
 var app = express();
 
@@ -42,20 +45,43 @@ app.use(function(err, req, res, next) {
     next();
 });
 
+var server = http.createServer(app);
+
+// websocket functionality
+var wss = new WebSocketServer({server:server});
+wss.on('connection', function(ws) {
+    var onStats = function(stats) {
+        ws.send(JSON.stringify(stats));
+    }
+
+    server.on('stats', onStats);
+    ws.on('close', function() {
+        console.log("removing cb");
+        server.removeListener("events", onStats);
+    });
+
+});
+
 function startup(cb) {
     var port = process.env.PORT || 3000
-    app.listen(port, function(err) {
-        cb(err, port);
+    server.listen(port, function(err) {
+        cb(err, server);
     });
+
+    return server;
 }
 
 if (require.main === module) {
-    startup(function(err, port) {
+    startup(function(err, server) {
         if (err) {
             console.log(err);
             return;
         }
-        console.log("App listening on " + port);
+        console.log("App listening on " + server.address().port);
+
+        setInterval(function() {
+            server.emit('stats', {n: Date.now()});
+        }, 1000);
     });
 } else {
     exports.startup = startup;
