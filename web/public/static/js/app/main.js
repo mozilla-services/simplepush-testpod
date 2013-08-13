@@ -5,6 +5,7 @@ define([
     'jquery'
     , "model/Stats"
     , "view/NumberFormatted"
+    , "view/NumberBucket"
 ], function(
     $
 
@@ -13,6 +14,7 @@ define([
 
     // views
     , NumberFormattedView
+    , NumberBucketView
 ) {
     var statsModel = new StatsModel()
 
@@ -41,13 +43,37 @@ define([
 
     $(function() {
         // update the UI when the stats model changes
-        for(k in statsModel.defaults) {
+        var numViews = [
+            "conn_current"
+            , "conn_attempted"
+            , "conn_ok"
+            , "conn_fail"
+            , "conn_rate"
+            , "ping_sent"
+            , "ping_received"
+            , "ping_timeout"
+            , "ping_rate"
+            , "ping_avg"
+            , "ping_median"
+        ];
+
+        for(var i =0; i<numViews.length; i++) {
             new NumberFormattedView({
                 model: statsModel
-                , watch: k
-                , el : "#" + k
+                , watch: numViews[i]
+                , el : "#" + numViews[i]
             });
+        }
 
+        var pingTimesViews = [50, 100, 500, 1500, 5000, 10000, 'X'];
+        for(var i=0; i<pingTimesViews.length; i++) {
+            var k = 'p_t' + pingTimesViews[i] + 'ms';
+            new NumberBucketView({
+                model: statsModel
+                , count: 'p_count'
+                , watch: k
+                , el: '#' + k
+            });
         }
     });
 
@@ -77,16 +103,26 @@ define([
         ws.onmessage = function(e) {
             try {
                 var data = JSON.parse(e.data);
-                if (data.connections) statsModel.set('conn_current', data.connections);
-                if (data.pings) {
-                    if (data.pings.sent) statsModel.set('ping_sent', data.pings.sent);
-                    if (data.pings.received) statsModel.set('ping_received', data.pings.received);
-                    if (data.pings.avg) statsModel.set('ping_avg', data.pings.avg);
-                    if (data.pings.median) statsModel.set('ping_median', data.pings.median);
-                }
+            } catch(err) {
+                console.log("WS JSON ERROR", err);
+                return;
+            }
 
-            } catch(e) {
-                console.log("ERROR", e);
+            if (data.connections) statsModel.set('conn_current', data.connections);
+            if (data.pings) {
+                if (data.pings.sent) statsModel.set('ping_sent', data.pings.sent);
+                if (data.pings.received) statsModel.set('ping_received', data.pings.received);
+                if (data.pings.avg) statsModel.set('ping_avg', data.pings.avg);
+                if (data.pings.median) statsModel.set('ping_median', data.pings.median);
+            }
+
+            if (data.pingTimes) {
+                //console.log("ping times", data.pingTimes);
+                var stat;
+                for (k in data.pingTimes) {
+                    stat = "p_" + k;
+                    statsModel.set("p_" + k, data.pingTimes[k]);
+                }
             }
         };
 

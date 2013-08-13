@@ -16,13 +16,8 @@ define([
             , conn_fail      : 0
             , conn_rate      : 100
 
-            // lifetime measurements
-            , conn_lt_5s: 0
-            , conn_lt_15s: 0
-            , conn_lt_30s: 0
-            , conn_lt_60s: 0
-            , conn_lt_120s: 0
-            , conn_lt_max: 0
+
+            // Connection Times
 
             // Ping Stats
             , ping_sent     : 0
@@ -31,6 +26,16 @@ define([
             , ping_rate     : 12
             , ping_avg      : 0
             , ping_median   : 0
+
+            // ping latency
+            , p_count    : -1
+            , p_t50ms    : -1
+            , p_t100ms   : -1
+            , p_t500ms   : -1
+            , p_t1500ms  : -1
+            , p_t5000ms  : -1
+            , p_t10000ms : -1
+            , p_X        : -1
         }
 
         , initialize: function(options) {
