@@ -1,0 +1,114 @@
+doctype 5
+html
+    head
+        title SimplePush Test Pod
+        link(rel="stylesheet", href="/css/main.css")
+        script(data-main="/js/app", src="/js/lib/require.js")
+    
+    body
+        h1 Server: some.host.name 
+
+        p
+            | Connection Status: 
+            span#connectionStatus.disconnected -
+
+        h2 Websocket Statistics
+
+        table.stats
+            tr
+                td.stat WebSockets connected
+                td.num
+                    span#conn_current --
+
+        h3 Connection Stats
+        table.stats
+            tr
+                th Attempted
+                th OK
+                th Fail
+                th Success Rate
+            tr
+                td.num
+                    span#conn_attempted --
+                td.num
+                    span#conn_ok --
+                td.num
+                    span#conn_fail --
+                td.num
+                    span#conn_rate --
+                    span %
+
+        h3 Connection Lifetime
+
+        table.stats
+            tr
+                th 5s
+                th 15s
+                th 30s
+                th 1m
+                th 2m
+                th 5m
+                th &gt; 10m
+            tr
+                td.num 1%
+                td.num 10%
+                td.num 25%
+                td.num 10%
+                td.num 5%
+                td.num 1%
+                td.num 1%
+
+        p.about 
+            strong Note: 
+            | These are buckets with time measurements of how long socket connections
+            | are able to stay connected for. 
+
+
+        h2 Ping Statistics
+        table.stats
+            tr
+                th Sent
+                th Received
+                th Timeout
+                th Success Rate
+            tr
+                td.num
+                    span#ping_sent
+                td.num
+                    span#ping_received
+                td.num
+                    span#ping_timeout
+                td.num
+                    span#ping_rate
+                    span %
+
+        h3 Ping latencies
+
+        table.stats
+            tr
+                th 50ms
+                th 100ms
+                th 500ms
+                th 1000ms
+                th 1500ms
+                th 3000ms
+                th 3000ms
+            tr
+                td.num 1%
+                td.num 10%
+                td.num 25%
+                td.num 10%
+                td.num 5%
+                td.num 1%
+                td.num 1%
+
+        table.stats
+            tr
+                td.stat average
+                td.num 
+                    span#ping_avg 0
+            tr
+                td.stat median
+                td.num 
+                    span#ping_median 0
+
