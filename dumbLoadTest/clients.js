@@ -13,17 +13,18 @@ var toConnect = 0;
 var connected= 0, lastConnected=0;
 setTimeout(function connect() {
     var ws = new WebSocket('ws://' + program.server + '/');
+    var myid = 0;
     ws.on('open', function(e) {
         connected+=1
-
+        myid = connected;
     });
 
     ws.on('close', function() {
-        debug('close');
+        debug('close id: %d', myid);
     });
 
     ws.on('error', function(e) {
-        debug('ERROR %s', e);
+        debug('ERROR (%d) %s', myid, e);
     });
 
     if (++toConnect < program.clients) {
