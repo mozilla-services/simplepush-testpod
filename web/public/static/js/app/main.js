@@ -16,7 +16,7 @@ define([
     , NumberFormattedView
     , NumberBucketView
 ) {
-    var statsModel = new StatsModel()
+    var statsModel = new StatsModel();
 
     // inject some fake data...
     /*
@@ -51,6 +51,7 @@ define([
             , "conn_rate"
             , "ping_sent"
             , "ping_received"
+            , "ping_duplicate"
             , "ping_timeout"
             , "ping_rate"
             , "ping_avg"
@@ -112,6 +113,7 @@ define([
             if (data.pings) {
                 if (data.pings.sent) statsModel.set('ping_sent', data.pings.sent);
                 if (data.pings.received) statsModel.set('ping_received', data.pings.received);
+                if (data.pings.duplicate) statsModel.set('ping_duplicate', data.pings.duplicate);
                 if (data.pings.avg) statsModel.set('ping_avg', data.pings.avg);
                 if (data.pings.median) statsModel.set('ping_median', data.pings.median);
             }
@@ -134,7 +136,7 @@ define([
                 .addClass('disconnected');
 
             setTimeout(startWS, connectInterval);
-        }
+        };
         connectInterval = Math.floor((connectInterval*1.5));
     }
 

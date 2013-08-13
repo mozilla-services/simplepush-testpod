@@ -20,12 +20,13 @@ define([
             // Connection Times
 
             // Ping Stats
-            , ping_sent     : 0
-            , ping_received : 0
-            , ping_timeout  : 0
-            , ping_rate     : 12
-            , ping_avg      : 0
-            , ping_median   : 0
+            , ping_sent      : 0
+            , ping_received  : 0
+            , ping_duplicate : 0
+            , ping_timeout   : 0
+            , ping_rate      : 12
+            , ping_avg       : 0
+            , ping_median    : 0
 
             // ping latency
             , p_count    : -1
