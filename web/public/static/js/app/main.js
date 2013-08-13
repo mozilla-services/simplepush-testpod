@@ -17,6 +17,7 @@ define([
     var statsModel = new StatsModel()
 
     // inject some fake data...
+    /*
     var i = setInterval(function() {
         statsModel.set('conn_current', statsModel.get('conn_current') + 37)
         var pSent = statsModel.get('ping_sent') + Math.round(Math.random(1));
@@ -36,6 +37,7 @@ define([
         }
 
     }, 250);
+    */
 
     $(function() {
         // update the UI when the stats model changes
@@ -57,28 +59,48 @@ define([
     function startWS() {
         ws = new WebSocket("ws://"+window.location.hostname + ":" + window.location.port);
         ws.onerror = function(e) {
-            console.log("WS error", e);
+            $('#connectionStatus')
+                .text('Error: ' + e)
+                .attr('class', '')
+                .addClass('disconnected');
         };
 
         ws.onopen = function(e) {
-            console.log("Websocket Open")
+            $('#connectionStatus')
+                .text('open')
+                .attr('class', '')
+                .addClass('connected');
+
             connectInterval = 1000;
         };
 
         ws.onmessage = function(e) {
-            console.log(e.data);
+            try {
+                var data = JSON.parse(e.data);
+                if (data.connections) statsModel.set('conn_current', data.connections);
+                if (data.pings) {
+                    if (data.pings.sent) statsModel.set('ping_sent', data.pings.sent);
+                    if (data.pings.received) statsModel.set('ping_received', data.pings.received);
+                    if (data.pings.avg) statsModel.set('ping_avg', data.pings.avg);
+                    if (data.pings.median) statsModel.set('ping_median', data.pings.median);
+                }
+
+            } catch(e) {
+                console.log("ERROR", e);
+            }
         };
 
         ws.onclose = function() {
             console.log("WS Waiting ", connectInterval, " before reconnecting");
+            $('#connectionStatus')
+                .text('Waiting ' + connectInterval + ' to retry')
+                .attr('class', '')
+                .addClass('disconnected');
+
             setTimeout(startWS, connectInterval);
         }
-
         connectInterval = Math.floor((connectInterval*1.5));
     }
 
-
     startWS();
-   
-
 });

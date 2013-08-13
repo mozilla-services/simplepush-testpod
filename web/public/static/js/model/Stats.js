@@ -29,12 +29,8 @@ define([
             , ping_received : 0
             , ping_timeout  : 0
             , ping_rate     : 12
-
-            // Ping Lantecy Measurements
-            
-            // Response Time
-            , response_avg : 0
-            , response_med : 0
+            , ping_avg      : 0
+            , ping_median   : 0
         }
 
         , initialize: function(options) {

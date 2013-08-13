@@ -19,4 +19,8 @@ test.run();
 
 webserver.startup(function(err, server) {
     debug('webserver')("Webserver listening on " + server.address().port);
+
+    setInterval(function() {
+        server.emit('stats', test.getInfo());
+    }, 1000);
 });

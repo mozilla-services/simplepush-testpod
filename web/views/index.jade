@@ -6,7 +6,11 @@ html
         script(data-main="/js/app", src="/js/lib/require.js")
     
     body
-        h1 Server: some.host.name
+        h1 Server: some.host.name 
+
+        p
+            | Connection Status: 
+            span#connectionStatus.disconnected -
 
         h2 Websocket Statistics
 
@@ -102,9 +106,9 @@ html
             tr
                 td.stat average
                 td.num 
-                    span#response_avg 0
+                    span#ping_avg 0
             tr
                 td.stat median
                 td.num 
-                    span#response_med 0
+                    span#ping_median 0
 
