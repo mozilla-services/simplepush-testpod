@@ -50,6 +50,7 @@ define([
             , "conn_fail"
             , "conn_rate"
             , "ping_sent"
+            , "ping_outstanding"
             , "ping_received"
             , "ping_duplicate"
             , "ping_timeout"
@@ -129,6 +130,7 @@ define([
 
             if (data.pings) {
                 if (data.pings.sent) statsModel.set('ping_sent', data.pings.sent);
+                if (data.pings.outstanding) statsModel.set('ping_outstanding', data.pings.outstanding);
                 if (data.pings.received) statsModel.set('ping_received', data.pings.received);
                 if (data.pings.duplicate) statsModel.set('ping_duplicate', data.pings.duplicate);
                 if (data.pings.avg) statsModel.set('ping_avg', data.pings.avg);
