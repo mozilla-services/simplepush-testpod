@@ -10,13 +10,18 @@ program
 
 const THROTTLE = 50;
 var toConnect = 0;
-var connected= 0, lastConnected=0;
+var connected= 0;
+var lastOut = "", messageCount = 0;
 setTimeout(function connect() {
     var ws = new WebSocket('ws://' + program.server + '/');
     var myid = 0;
     ws.on('open', function(e) {
         connected+=1
         myid = connected;
+    });
+
+    ws.on('message', function(m) {
+        messageCount += 1;
     });
 
     ws.on('close', function() {
@@ -33,12 +38,12 @@ setTimeout(function connect() {
 }, THROTTLE);
 
 setInterval(function() {
-    if (lastConnected == connected) {
+    var out = "connected: " + connected + " msgs recvd: " + messageCount; 
+    if (out == lastOut) {
         return;
     }
 
-    debug('connected: %d', connected);
-    lastConnected = connected;
+    debug(out);
 }, 100);
 
 
