@@ -76,6 +76,17 @@ define([
                 , el: '#' + k
             });
         }
+
+        var connTimeViews = [5, 30, 60, 300, 600, 1800, 'X'];
+        for(var i=0; i<connTimeViews.length; i++) {
+            var k = 'c_t' + connTimeViews[i] + 's';
+            new NumberBucketView({
+                model: statsModel
+                , count: 'c_count'
+                , watch: k
+                , el: '#' + k
+            });
+        }
     });
 
 
@@ -109,7 +120,13 @@ define([
                 return;
             }
 
-            if (data.connections) statsModel.set('conn_current', data.connections);
+            if (data.connections) {
+                if (data.connections.current) statsModel.set('conn_current', data.connections.current);
+                if (data.connections.attempted) statsModel.set('conn_attempted', data.connections.attempted);
+                if (data.connections.ok) statsModel.set('conn_ok', data.connections.ok);
+                if (data.connections.fail) statsModel.set('conn_fail', data.connections.fail);
+            }
+
             if (data.pings) {
                 if (data.pings.sent) statsModel.set('ping_sent', data.pings.sent);
                 if (data.pings.received) statsModel.set('ping_received', data.pings.received);
@@ -118,9 +135,17 @@ define([
                 if (data.pings.median) statsModel.set('ping_median', data.pings.median);
             }
 
+            var stat;
+
+            if (data.connTimes) {
+                for (k in data.connTimes) {
+                    stat = "c_" + k;
+                    statsModel.set("c_" + k, data.connTimes[k]);
+                }
+            }
+
             if (data.pingTimes) {
                 //console.log("ping times", data.pingTimes);
-                var stat;
                 for (k in data.pingTimes) {
                     stat = "p_" + k;
                     statsModel.set("p_" + k, data.pingTimes[k]);

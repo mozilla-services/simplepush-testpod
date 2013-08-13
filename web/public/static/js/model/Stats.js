@@ -18,6 +18,14 @@ define([
 
 
             // Connection Times
+            , c_count  : -1
+            , c_t5s    : -1
+            , c_t30s   : -1
+            , c_t60s   : -1
+            , c_t300s  : -1
+            , c_t600s  : -1
+            , c_t1800s : -1
+            , c_tXs    : -1
 
             // Ping Stats
             , ping_sent      : 0
@@ -42,12 +50,17 @@ define([
         , initialize: function(options) {
 
             this.on('change:conn_attempted change:conn_ok', function(m) {
-                var rate = Math.round(m.get('conn_ok')/m.get('conn_attempted')*100);
+                var a = m.get('conn_attempted');
+                if (a == 0) return;
+
+                var rate = Math.round(m.get('conn_ok')/a*100);
                 m.set('conn_rate', rate);
             });
 
             this.on('change:ping_sent change:ping_received', function(m) {
-                var rate = Math.round(m.get('ping_received')/m.get('ping_sent')*100);
+                var s = m.get('ping_sent');
+                if (s == 0) return;
+                var rate = Math.round(m.get('ping_received')/s*100);
                 m.set('ping_rate', rate);
             });
         }
