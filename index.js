@@ -11,6 +11,7 @@ program
     .option('-m, --minpingtime <minpingtime>', 'Minimum milliseconds between pings', Number, 500)
     .option('-M, --maxpingtime <minpingtime>', 'Maximum milliseconds between pings', Number, 1000)
     .option('-p, --pingsperchannel <pingsperchannel>', 'How many pings to send per channel 0 means infinite', Number, 0)
+    .option('-S, --no-ssl', "Use https")
     .parse(process.argv);
 
 
