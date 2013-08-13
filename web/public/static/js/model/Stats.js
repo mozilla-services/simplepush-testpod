@@ -35,12 +35,12 @@ define([
 
         , initialize: function(options) {
 
-            this.on('change:conn_attempted, change:conn_ok', function(m) {
+            this.on('change:conn_attempted change:conn_ok', function(m) {
                 var rate = Math.round(m.get('conn_ok')/m.get('conn_attempted')*100);
                 m.set('conn_rate', rate);
             });
 
-            this.on('change:ping_sent, change:ping_received', function(m) {
+            this.on('change:ping_sent change:ping_received', function(m) {
                 var rate = Math.round(m.get('ping_received')/m.get('ping_sent')*100);
                 m.set('ping_rate', rate);
             });
