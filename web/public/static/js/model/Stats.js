@@ -9,6 +9,7 @@ define([
         defaults: {
             // current connections
             conn_current: 0
+            , test_seconds: 0
 
             // Connection Stats
             , conn_attempted : 0

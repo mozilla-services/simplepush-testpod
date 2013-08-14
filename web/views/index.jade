@@ -8,9 +8,16 @@ html
     body
         h1 Server: some.host.name 
 
-        p
-            | Connection Status: 
-            span#connectionStatus.disconnected -
+        table.stats
+            tr
+                td.stat WS Status
+                td 
+                    span#connectionStatus.disconnected -
+            tr
+                td.stat Test time
+                td
+                    span#test_seconds
+                    |  seconds
 
         h2 Websocket Statistics
 

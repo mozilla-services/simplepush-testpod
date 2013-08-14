@@ -45,6 +45,7 @@ define([
         // update the UI when the stats model changes
         var numViews = [
             "conn_current"
+            , "test_seconds"
             , "conn_attempted"
             , "conn_ok"
             , "conn_fail"
@@ -119,6 +120,10 @@ define([
             } catch(err) {
                 console.log("WS JSON ERROR", err);
                 return;
+            }
+
+            if (data.test_seconds) {
+                statsModel.set('test_seconds', data.test_seconds);
             }
 
             if (data.connections) {
