@@ -29,7 +29,7 @@ function resultHandler(result) {
             serverAckTime = result.time;
             break;
         case 'GOT_VERSION_OK':
-            testy("WS RTT %dms", result.time - serverAckTime);
+            testy("WS RTT %dms, waiting 3s to send again", result.time - serverAckTime);
             setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 2000) , 3000);
             break;
 
@@ -37,12 +37,13 @@ function resultHandler(result) {
             break;
 
         case 'TIMEOUT':
-            testy('TIMEOUT, expired: %dms', result.data);
-            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint), 3000);
+            testy('TIMEOUT, expired: %dms, waiting 3s to send again', result.data);
+            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 2000), 3000);
             break;
 
         case 'ERR_SERVER': // the server returned a non 200
-            testy("Error. Server code: %s", result.data);
+            testy("PUT ERROR: %s, waiting 3s to send again", result.data);
+            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 2000), 3000);
             break;
 
         case 'ERR_NETWORK': // network issues?
@@ -61,6 +62,7 @@ for (var i =0; i < program.clients; i++) {
         }
 
         c.on('pushendpoint', function(endpointUrl, channelID) {
+            testy("Created channel: %s", channelID);
             var e = new EndPoint(c, endpointUrl, channelID);
             var serverAckTime = 0;
             e.on('result', resultHandler);
