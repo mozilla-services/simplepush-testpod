@@ -17,20 +17,18 @@ program
     .option('-S, --ssl', "Use https")
     .parse(process.argv);
 
-var testy = debug('testy')
+var testy = debug('testy');
+var deep = debug('deep')
 
 function resultHandler(result) {
-    testy("Status: %s | time: %dms | channel: %s", 
-        result.status, result.time, result.endpoint.channelID
+    deep("*** RESULT: (%dms) %s | %s ***", 
+        result.time, result.status, result.endpoint.channelID
     )
 
     switch (result.status) {
-        case 'SERVER_OK':
-            serverAckTime = result.time;
-            break;
         case 'GOT_VERSION_OK':
-            testy("WS RTT %dms, waiting 3s to send again", result.time - serverAckTime);
-            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 2000) , 3000);
+            testy("\\o/. ws lag: %dms, waiting 3s to send again", result.time - serverAckTime);
+            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 5000) , 3000);
             break;
 
         case 'ERR_VER_MISMATCH':
@@ -38,12 +36,21 @@ function resultHandler(result) {
 
         case 'TIMEOUT':
             testy('TIMEOUT, expired: %dms, waiting 3s to send again', result.data);
-            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 2000), 3000);
+            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 5000), 3000);
             break;
 
-        case 'ERR_SERVER': // the server returned a non 200
-            testy("PUT ERROR: %s, waiting 3s to send again", result.data);
-            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 2000), 3000);
+        case 'PUT_OK':
+            testy("PUT OK #%d@%s", result.data.id, result.endpoint.channelID);
+            serverAckTime = result.time;
+            break;
+
+        case 'PUT_FAIL': // the server returned a non 200
+            testy("PUT FAIL #%d@%s. HTTP %s, waiting 3s to send again", 
+                    result.data.id, 
+                    result.endpoint.channelID,
+                    result.data.code
+                );
+            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 5000), 3000);
             break;
 
         case 'ERR_NETWORK': // network issues?
