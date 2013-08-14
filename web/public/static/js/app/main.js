@@ -161,9 +161,9 @@ define([
         };
 
         ws.onclose = function() {
-            console.log("WS Waiting ", connectInterval, " before reconnecting");
+            console.log("WS Waiting ", connectInterval, "ms before reconnecting");
             $('#connectionStatus')
-                .text('Waiting ' + connectInterval + ' to retry')
+                .text('Waiting ' + connectInterval + 'ms to retry')
                 .attr('class', '')
                 .addClass('disconnected');
 
