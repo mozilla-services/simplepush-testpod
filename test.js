@@ -31,7 +31,12 @@ function resultHandler(result) {
             setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 5000) , 3000);
             break;
 
-        case 'ERR_VER_MISMATCH':
+        case 'ERR_VER_INVALID':
+            testy("ERROR: Unexpected Version. Got %d, expected: %d", 
+                    result.data.got, 
+                    result.data.expected
+                );
+
             break;
 
         case 'TIMEOUT':
@@ -42,7 +47,7 @@ function resultHandler(result) {
         case 'PUT_OK':
             testy("PUT #%d OK %s | %s", 
                     result.data.id, 
-                    result.endpoint.channelID, 
+                    result.channelID, 
                     result.data.body
             );
             serverAckTime = result.time;
@@ -51,7 +56,7 @@ function resultHandler(result) {
         case 'PUT_FAIL': // the server returned a non 200
             testy("PUT %d FAIL %s. HTTP %s %s, waiting 3s to send again", 
                     result.data.id, 
-                    result.endpoint.channelID,
+                    result.channelID,
                     result.data.code,
                     result.data.body
                 );
@@ -73,13 +78,19 @@ for (var i =0; i < program.clients; i++) {
             c.registerChannel(uuid.v1());
         }
 
+        var endPointCount = 0;
         c.on('pushendpoint', function(endpointUrl, channelID) {
             testy("Created channel: %s", channelID);
-            var e = new EndPoint(c, endpointUrl, channelID);
+            var e = new EndPoint(c, endpointUrl, channelID, ++endPointCount);
             var serverAckTime = 0;
             e.on('result', resultHandler);
             e.sendNextVersion()
         });
+
+        // an empty notification was sent
+        c.on('err_notification_empty', function() {
+            testy('ERROR: Empty Notification');
+        })
 
         c.start()
     })(i);
