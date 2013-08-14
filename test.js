@@ -40,15 +40,20 @@ function resultHandler(result) {
             break;
 
         case 'PUT_OK':
-            testy("PUT #%d OK %s", result.data.id, result.endpoint.channelID);
+            testy("PUT #%d OK %s | %s", 
+                    result.data.id, 
+                    result.endpoint.channelID, 
+                    result.data.body
+            );
             serverAckTime = result.time;
             break;
 
         case 'PUT_FAIL': // the server returned a non 200
-            testy("PUT %d FAIL %s. HTTP %s, waiting 3s to send again", 
+            testy("PUT %d FAIL %s. HTTP %s %s, waiting 3s to send again", 
                     result.data.id, 
                     result.endpoint.channelID,
-                    result.data.code
+                    result.data.code,
+                    result.data.body
                 );
             setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 5000), 3000);
             break;
