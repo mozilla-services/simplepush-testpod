@@ -18,29 +18,6 @@ define([
 ) {
     var statsModel = new StatsModel();
 
-    // inject some fake data...
-    /*
-    var i = setInterval(function() {
-        statsModel.set('conn_current', statsModel.get('conn_current') + 37)
-        var pSent = statsModel.get('ping_sent') + Math.round(Math.random(1));
-
-        statsModel.set('conn_attempted', statsModel.get('conn_attempted') + 1)
-        if (Math.round(Math.random(1)) === 0) {
-            statsModel.set('conn_fail', statsModel.get('conn_fail') + 1)
-        } else {
-            statsModel.set('conn_ok', statsModel.get('conn_ok') + 1)
-        }
-
-        statsModel.set('ping_sent', statsModel.get('ping_sent') + 1)
-        if (Math.round(Math.random(1)) === 0) {
-            statsModel.set('ping_timeout', statsModel.get('ping_timeout') + 1)
-        } else {
-            statsModel.set('ping_received', statsModel.get('ping_received') + 1)
-        }
-
-    }, 250);
-    */
-
     $(function() {
         // update the UI when the stats model changes
         var numViews = [
@@ -54,10 +31,11 @@ define([
             , "ping_outstanding"
             , "ping_received"
             , "ping_duplicate"
-            , "ping_timeout"
-            , "ping_rate"
+            , "ping_failed"
             , "ping_avg"
             , "ping_median"
+            , "ping_timeout"
+            , "ping_rate"
         ];
 
         for(var i =0; i<numViews.length; i++) {
@@ -121,43 +99,7 @@ define([
                 console.log("WS JSON ERROR", err);
                 return;
             }
-
-            if (data.test_seconds) {
-                statsModel.set('test_seconds', data.test_seconds);
-            }
-
-            if (data.connections) {
-                if (data.connections.current) statsModel.set('conn_current', data.connections.current);
-                if (data.connections.attempted) statsModel.set('conn_attempted', data.connections.attempted);
-                if (data.connections.ok) statsModel.set('conn_ok', data.connections.ok);
-                if (data.connections.fail) statsModel.set('conn_fail', data.connections.fail);
-            }
-
-            if (data.pings) {
-                if (data.pings.sent) statsModel.set('ping_sent', data.pings.sent);
-                if (data.pings.outstanding) statsModel.set('ping_outstanding', data.pings.outstanding);
-                if (data.pings.received) statsModel.set('ping_received', data.pings.received);
-                if (data.pings.duplicate) statsModel.set('ping_duplicate', data.pings.duplicate);
-                if (data.pings.avg) statsModel.set('ping_avg', data.pings.avg);
-                if (data.pings.median) statsModel.set('ping_median', data.pings.median);
-            }
-
-            var stat;
-
-            if (data.connTimes) {
-                for (k in data.connTimes) {
-                    stat = "c_" + k;
-                    statsModel.set("c_" + k, data.connTimes[k]);
-                }
-            }
-
-            if (data.pingTimes) {
-                //console.log("ping times", data.pingTimes);
-                for (k in data.pingTimes) {
-                    stat = "p_" + k;
-                    statsModel.set("p_" + k, data.pingTimes[k]);
-                }
-            }
+            statsModel.set(data);
         };
 
         ws.onclose = function() {

@@ -17,7 +17,6 @@ define([
             , conn_fail      : 0
             , conn_rate      : 100
 
-
             // Connection Times
             , c_count  : -1
             , c_t5s    : -1
@@ -29,14 +28,15 @@ define([
             , c_tXs    : -1
 
             // Ping Stats
-            , ping_sent        : 0
-            , ping_outstanding : 0
-            , ping_received    : 0
-            , ping_duplicate   : 0
-            , ping_timeout     : 0
-            , ping_rate        : 12
-            , ping_avg         : 0
-            , ping_median      : 0
+            , ping_sent        : -1
+            , ping_outstanding : -1
+            , ping_received    : -1
+            , ping_duplicate   : -1
+            , ping_failed      : -1
+            , ping_avg         : -1
+            , ping_median      : -1
+            , ping_timeout     : -1
+            , ping_rate        : -1
 
             // ping latency
             , p_count    : -1
