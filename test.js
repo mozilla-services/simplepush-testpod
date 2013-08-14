@@ -17,48 +17,57 @@ program
     .option('-S, --ssl', "Use https")
     .parse(process.argv);
 
-var c = new Client(program.pushgoserver);
-for(var j = 0; j < program.channels; j++) {
-    c.registerChannel(uuid.v1());
+var testy = debug('testy')
+
+function resultHandler(result) {
+    testy("Status: %s | time: %dms | channel: %s", 
+        result.status, result.time, result.endpoint.channelID
+    )
+
+    switch (result.status) {
+        case 'SERVER_OK':
+            serverAckTime = result.time;
+            break;
+        case 'GOT_VERSION_OK':
+            testy("WS RTT %dms", result.time - serverAckTime);
+            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, 2000) , 3000);
+            break;
+
+        case 'ERR_VER_MISMATCH':
+            break;
+
+        case 'TIMEOUT':
+            testy('TIMEOUT, expired: %dms', result.data);
+            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint), 3000);
+            break;
+
+        case 'ERR_SERVER': // the server returned a non 200
+            testy("Error. Server code: %s", result.data);
+            break;
+
+        case 'ERR_NETWORK': // network issues?
+            break;
+    }
 }
 
-var testy = debug('testy')
-c.on('pushendpoint', function(endpointUrl, channelID) {
-    var e = new EndPoint(c, endpointUrl, channelID);
-    var serverAckTime = 0;
-    e.on('result', function(result) {
-        testy("Status: %s | time: %dms | channel: %s", 
-            result.status, result.time, result.endpoint.channelID
-        )
-        switch (result.status) {
-            case 'SERVER_OK':
-                serverAckTime = result.time;
-                break;
-            case 'GOT_VERSION_OK':
-                testy("WS RTT %dms", result.time - serverAckTime);
-                setTimeout(e.sendNextVersion.bind(e), 3000);
-                break;
+for (var i =0; i < program.clients; i++) {
 
-            case 'ERR_VER_MISMATCH':
-                break;
+    (function(i) {
+        testy("Creating client: %d", i);
 
-            case 'TIMEOUT':
-                testy('TIMEOUT');
-                break;
-
-            case 'ERR_SERVER': // the server returned a non 200
-                testy("Error. Server code: %s", result.data);
-                break;
-
-            case 'ERR_NETWORK': // network issues?
-                break;
+        var c = new Client(program.pushgoserver);
+        for(var j = 0; j < program.channels; j++) {
+            c.registerChannel(uuid.v1());
         }
 
+        c.on('pushendpoint', function(endpointUrl, channelID) {
+            var e = new EndPoint(c, endpointUrl, channelID);
+            var serverAckTime = 0;
+            e.on('result', resultHandler);
+            e.sendNextVersion()
+        });
 
-
-    });
-    e.sendNextVersion()
-});
-
-c.start()
+        c.start()
+    })(i);
+}
 
