@@ -87,7 +87,7 @@ function random( min, max ) {
     return Math.random() * ( max - min ) + min;
 }
 
-var updateTimes = [50, 100, 500, 1500, 5000, 10000];
+var updateTimes = [50, 100, 500, 1500, 5000, 10000, 20000, 60000];
 function resultHandler(result) {
     deep("*** RESULT: (%dms) %s | %s ***", 
         result.time, result.status, result.endpoint.channelID
@@ -113,6 +113,7 @@ function resultHandler(result) {
                     result.data.id, 
                     result.channelID,
                     result.data.code,
+
                     result.data.body
                 );
             break;
@@ -153,8 +154,6 @@ function resultHandler(result) {
         case 'TIMEOUT':
             stats.update_outstanding -= 1;
             stats.update_timeout += 1;
-            stats.u_count += 1;
-            stats.u_tXms += 1;
             testy('TIMEOUT, expired: %dms', result.data);
             break;
 

@@ -50,10 +50,10 @@ define([
             , "put_failed"
             , "update_outstanding"
             , "update_received"
-            , "update_duplicate"
+            , "update_timeout"
+            , "update_invalid"
             , "update_avg"
             , "update_median"
-            , "update_timeout"
             , "update_rate"
         ];
 
@@ -65,7 +65,7 @@ define([
             });
         }
 
-        var updateTimes = [50, 100, 500, 1500, 5000, 10000, 'X'];
+        var updateTimes = [50, 100, 500, 1500, 5000, 10000, 20000, 60000, 'X'];
         for(var i=0; i<updateTimes.length; i++) {
             var k = 'u_t' + updateTimes[i] + 'ms';
             new NumberBucketView({
