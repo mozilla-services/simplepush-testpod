@@ -158,7 +158,7 @@ function resultHandler(result) {
             break;
     }
 
-    if (result.status != "PUT_OK") {
+    if (result.status != "PUT_OK" && result.endpoint.client.connected !== false) {
         var nextUpdate = Math.floor(random(program.minupdatetime, program.maxupdatetime));
         testy("Waiting %dms to send another update", nextUpdate)
         setTimeout(
