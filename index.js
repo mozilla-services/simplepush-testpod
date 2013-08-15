@@ -80,6 +80,8 @@ var stats = {
     , u_t1500ms  : 0
     , u_t5000ms  : 0
     , u_t10000ms : 0
+    , u_t20000ms : 0
+    , u_t60000ms : 0
     , u_tXms     : 0
 };
 
