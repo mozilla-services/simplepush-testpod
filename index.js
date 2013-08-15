@@ -143,7 +143,7 @@ function resultHandler(result) {
 
         case 'ERR_VER_INVALID':
             stats.update_outstanding -= 1;
-            stats.update_failed += 1;
+            stats.update_invalid += 1;
             testy("ERROR: Unexpected Version. Got %d, expected: %d", 
                     result.data.got, 
                     result.data.expected
