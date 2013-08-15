@@ -1,6 +1,5 @@
 const UPDATE_TIMEOUT = 15000; // 15 seconds
 var program = require('commander'),
-    TestController = require('./lib/TestController'),
     Client = require('./lib/Client'),
     EndPoint = require('./lib/EndPoint')
     debug = require('debug'),
@@ -23,6 +22,12 @@ var testy = debug('testy');
 var deep = debug('deep')
 
 var startTime = moment();
+
+if (program.ssl) {
+    var http = require('https');
+} else {
+    var http = require('http');
+}
 
 /** 
  * This dirty little blob just gets updated
@@ -179,7 +184,7 @@ for (var i =0; i < program.clients; i++) {
         var endPointCount = 0;
         c.on('pushendpoint', function(endpointUrl, channelID) {
             testy("Created channel: %s", channelID);
-            var e = new EndPoint(c, endpointUrl, channelID, ++endPointCount);
+            var e = new EndPoint(http, c, endpointUrl, channelID, ++endPointCount);
             var serverAckTime = 0;
             e.on('result', resultHandler);
             e.sendNextVersion()
