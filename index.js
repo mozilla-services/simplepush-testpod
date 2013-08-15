@@ -147,6 +147,7 @@ function resultHandler(result) {
         case 'TIMEOUT':
             stats.update_outstanding -= 1;
             stats.update_timeout += 1;
+            stats.u_count += 1;
             stats.u_tXms += 1;
             testy('TIMEOUT, expired: %dms', result.data);
             break;
