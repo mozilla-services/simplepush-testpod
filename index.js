@@ -1,5 +1,5 @@
 const 
-    CONNECT_THROTTLE=100 // ms per connection
+    CONNECT_THROTTLE=5 // ms per connection
     , UPDATE_TIMEOUT = 30000; // in ms
 
 var program = require('commander'),
