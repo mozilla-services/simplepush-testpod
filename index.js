@@ -215,8 +215,8 @@ function handleClientEmptyNotify() {
 
 var clientCount = 0;
 
-// ghetto async creation lock.. 
-var opening = false;
+// ghetto async creation semaphore.. 
+var opening = 100;
 
 function createClient() {
     clientCount += 1;
@@ -233,15 +233,15 @@ function createClient() {
         var e = new EndPoint(http, c, endpointUrl, channelID);
         var serverAckTime = 0;
         e.on('result', resultHandler);
-        e.sendNextVersion()
+        e.sendNextVersion();
     });
 
-    opening = true;
+    opening--;
     c.once('open', function() {
         stats.conn_current += 1;
         stats.conn_ok += 1;
 
-        opening = false;
+        opening++;
     });
     c.once('close', handleClientClose);
 
@@ -249,10 +249,10 @@ function createClient() {
 
     stats.conn_attempted += 1;
     c.start();
-};
+}
 
 setTimeout(function ensureEnoughClients() {
-    if (opening == true) {
+    if (opening > 0) {
         setTimeout(ensureEnoughClients, CONNECT_THROTTLE / 2);
         return;
     }
