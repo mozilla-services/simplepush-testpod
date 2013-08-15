@@ -1,6 +1,6 @@
 const 
     CONNECT_THROTTLE=100 // ms per connection
-    , UPDATE_TIMEOUT = 15000; // 15 seconds
+    , UPDATE_TIMEOUT = 30000; // in ms
 
 var program = require('commander'),
     Client = require('./lib/Client'),
@@ -45,6 +45,7 @@ var stats = {
     , maxupdatetime : program.maxupdatetime
     , clients       : program.clients
     , channels      : program.channels
+    , timeout_time  : UPDATE_TIMEOUT
 
     // Connection Stats
     , conn_current   : 0
