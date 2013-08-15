@@ -78,34 +78,37 @@ html
             | are able to stay connected for. 
 
 
-        h2 Ping Statistics
+        h2 Update Stats
         table.stats
             tr
-                th Sent
-                th Outstanding
-                th Received
+                th PUT Sent
                 th PUT Failed 
-                th Timeout
-                th Duplicate
+                th Wait
+                th Received
+                th Timed out
+                th Invalid
                 th Success Rate
             tr
                 td.num
-                    span#ping_sent
+                    span#put_sent
                 td.num
-                    span#ping_outstanding
+                    span#put_failed
                 td.num
-                    span#ping_received
+                    span#update_outstanding
                 td.num
-                    span#ping_failed
+                    span#update_received
                 td.num
-                    span#ping_timeout
+                    span#update_timeout
                 td.num
-                    span#ping_duplicate
+                    span#update_invalid
                 td.num
-                    span#ping_rate
+                    span#update_rate
                     span %
 
-        h3 Ping latencies
+        h3 WS Return time
+        p.about
+            | A measure of how long after the 
+            | PUT request do we get an update through the websocket
 
         table.stats
             tr
@@ -118,19 +121,19 @@ html
                 th timed out (&gt; 10s)
             tr
                 td.num
-                    span#p_t50ms -
+                    span#u_t50ms -
                 td.num 
-                    span#p_t100ms -
+                    span#u_t100ms -
                 td.num 
-                    span#p_t500ms -
+                    span#u_t500ms -
                 td.num 
-                    span#p_t1500ms -
+                    span#u_t1500ms -
                 td.num 
-                    span#p_t5000ms -
+                    span#u_t5000ms -
                 td.num 
-                    span#p_t10000ms -
+                    span#u_t10000ms -
                 td.num 
-                    span#p_tXms -
+                    span#u_tXms -
 
         table.stats
             tr
