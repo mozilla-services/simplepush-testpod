@@ -252,18 +252,18 @@ function createClient() {
 }
 
 setTimeout(function ensureEnoughClients() {
+    if(stats.conn_current >= program.clients) {
+        setTimeout(ensureEnoughClients, CONNECT_THROTTLE * 10);
+        return;
+    }
+
     if (opening <= 0) {
         setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
         return;
     }
 
-    if(stats.conn_current < program.clients)  {
-        createClient();
-        setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
-        return;
-    }
-
-    setTimeout(ensureEnoughClients, CONNECT_THROTTLE * 10);
+    createClient();
+    setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
 }, 100);
 
 
