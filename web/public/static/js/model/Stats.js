@@ -7,46 +7,44 @@ define([
 ) {
     return Backbone.Model.extend({
         defaults: {
-            // current connections
-            conn_current: 0
-            , test_seconds: 0
+            test_seconds: 0
 
             // Connection Stats
+            , conn_current   : 0
             , conn_attempted : 0
             , conn_ok        : 0
             , conn_fail      : 0
-            , conn_rate      : 100
 
             // Connection Times
-            , c_count  : -1
-            , c_t5s    : -1
-            , c_t30s   : -1
-            , c_t60s   : -1
-            , c_t300s  : -1
-            , c_t600s  : -1
-            , c_t1800s : -1
-            , c_tXs    : -1
+            , c_count  : 0 
+            , c_t5s    : 0 
+            , c_t30s   : 0 
+            , c_t60s   : 0 
+            , c_t300s  : 0 
+            , c_t600s  : 0 
+            , c_t1800s : 0 
+            , c_tXs    : 0 
 
-            // Ping Stats
-            , ping_sent        : -1
-            , ping_outstanding : -1
-            , ping_received    : -1
-            , ping_duplicate   : -1
-            , ping_failed      : -1
-            , ping_avg         : -1
-            , ping_median      : -1
-            , ping_timeout     : -1
-            , ping_rate        : -1
+            // Update Stats
+            , put_sent           : 0
+            , put_failed         : 0
+            , update_outstanding : 0
+            , update_received    : 0
+            , update_timeout     : 0
+            , update_invalid     : 0
+            , update_net_error   : 0
+            , update_err_empty   : 0 // special, server sent an empty notify packet
+            , update_rate        : 0
 
-            // ping latency
-            , p_count    : -1
-            , p_t50ms    : -1
-            , p_t100ms   : -1
-            , p_t500ms   : -1
-            , p_t1500ms  : -1
-            , p_t5000ms  : -1
-            , p_t10000ms : -1
-            , p_X        : -1
+            // update timing latency (PushServer -> WS -> Client)
+            , u_count    : 0
+            , u_t50ms    : 0
+            , u_t100ms   : 0
+            , u_t500ms   : 0
+            , u_t1500ms  : 0
+            , u_t5000ms  : 0
+            , u_t10000ms : 0
+            , u_tXms     : 0
         }
 
         , initialize: function(options) {
@@ -59,11 +57,11 @@ define([
                 m.set('conn_rate', rate);
             });
 
-            this.on('change:ping_sent change:ping_received', function(m) {
-                var s = m.get('ping_sent');
+            this.on('change:put_sent change:update_received', function(m) {
+                var s = m.get('put_sent');
                 if (s == 0) return;
-                var rate = Math.round(m.get('ping_received')/s*100);
-                m.set('ping_rate', rate);
+                var rate = Math.round(m.get('update_received')/s*100);
+                m.set('update_rate', rate);
             });
         }
     });

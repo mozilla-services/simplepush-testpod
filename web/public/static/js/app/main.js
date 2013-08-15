@@ -27,15 +27,15 @@ define([
             , "conn_ok"
             , "conn_fail"
             , "conn_rate"
-            , "ping_sent"
-            , "ping_outstanding"
-            , "ping_received"
-            , "ping_duplicate"
-            , "ping_failed"
-            , "ping_avg"
-            , "ping_median"
-            , "ping_timeout"
-            , "ping_rate"
+            , "put_sent"
+            , "put_failed"
+            , "update_outstanding"
+            , "update_received"
+            , "update_duplicate"
+            , "update_avg"
+            , "update_median"
+            , "update_timeout"
+            , "update_rate"
         ];
 
         for(var i =0; i<numViews.length; i++) {
@@ -46,12 +46,12 @@ define([
             });
         }
 
-        var pingTimesViews = [50, 100, 500, 1500, 5000, 10000, 'X'];
-        for(var i=0; i<pingTimesViews.length; i++) {
-            var k = 'p_t' + pingTimesViews[i] + 'ms';
+        var updateTimes = [50, 100, 500, 1500, 5000, 10000, 'X'];
+        for(var i=0; i<updateTimes.length; i++) {
+            var k = 'u_t' + updateTimes[i] + 'ms';
             new NumberBucketView({
                 model: statsModel
-                , count: 'p_count'
+                , count: 'u_count'
                 , watch: k
                 , el: '#' + k
             });
