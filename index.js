@@ -228,11 +228,10 @@ function handleClientOpen() {
     opening++;
 }
 
-function createPushEndpoint(endpointUrl, channelID) {
-    if (DOUT) testy("Created channel: %s", channelID);
-    var e = new EndPoint(http, this, endpointUrl, channelID);
-    e.on('result', resultHandler);
-    e.sendNextVersion();
+function handleNewEndpoint(endpoint) {
+    if (DOUT) testy("New Endpoint: %s", endpoint.channelID);
+    endpoint.on('result', resultHandler);
+    endpoint.sendNextVersion();
 }
 
 function createClient() {
@@ -240,12 +239,12 @@ function createClient() {
     if (DOUT) testy("Creating client: %d", clientCount);
 
     opening--;
-    var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://');
+    var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://', http);
     for(var j = 0; j < program.channels; j++) {
         c.registerChannel(uuid.v1());
     }
 
-    c.on('pushendpoint', createPushEndpoint);
+    c.on('newendpoint', handleNewEndpoint);
 
     c.once('open', handleClientOpen);
     c.once('close', handleClientClose);
