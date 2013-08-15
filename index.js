@@ -1,6 +1,7 @@
 const 
     CONNECT_THROTTLE=5 // ms per connection
-    , UPDATE_TIMEOUT = 30000; // in ms
+    , UPDATE_TIMEOUT = 30000 // in ms
+    , OPEN_SEMAPHORE = 100;
 
 var program = require('commander'),
     Client = require('./lib/Client'),
@@ -216,7 +217,7 @@ function handleClientEmptyNotify() {
 var clientCount = 0;
 
 // ghetto async creation semaphore.. 
-var opening = 100;
+var opening = OPEN_SEMAPHORE;
 
 function createClient() {
     clientCount += 1;
@@ -252,7 +253,7 @@ function createClient() {
 }
 
 setTimeout(function ensureEnoughClients() {
-    if(stats.conn_current >= program.clients) {
+    if(stats.conn_current + (OPEN_SEMAPHORE - opening) >= program.clients) {
         setTimeout(ensureEnoughClients, CONNECT_THROTTLE * 10);
         return;
     }
