@@ -1,4 +1,7 @@
-const UPDATE_TIMEOUT = 15000; // 15 seconds
+const 
+    CONNECT_THROTTLE=100 // ms per connection
+    , UPDATE_TIMEOUT = 15000; // 15 seconds
+
 var program = require('commander'),
     Client = require('./lib/Client'),
     EndPoint = require('./lib/EndPoint')
@@ -179,31 +182,41 @@ function handleClientEmptyNotify() {
     stats.update_err_empty += 1;
 }
 
+var clientCount = 0;
+setTimeout(function create() {
+    clientCount += 1;
+    testy("Creating client: %d", clientCount);
+
+    var c = new Client(program.pushgoserver);
+    for(var j = 0; j < program.channels; j++) {
+        c.registerChannel(uuid.v1());
+    }
+
+    var endPointCount = 0;
+    c.on('pushendpoint', function(endpointUrl, channelID) {
+        testy("Created channel: %s", channelID);
+        var e = new EndPoint(http, c, endpointUrl, channelID, ++endPointCount);
+        var serverAckTime = 0;
+        e.on('result', resultHandler);
+        e.sendNextVersion()
+    });
+
+    c.once('open', handleClientOpen);
+    c.once('close', handleClientClose);
+    c.on('err_notification_empty', handleClientEmptyNotify);
+
+    stats.conn_attempted += 1;
+    c.start();
+
+    if (clientCount < program.clients) {
+        setTimeout(create, CONNECT_THROTTLE);
+    }
+
+}, CONNECT_THROTTLE);
+
 for (var i =0; i < program.clients; i++) {
 
     (function(i) {
-        testy("Creating client: %d", i);
-
-        var c = new Client(program.pushgoserver);
-        for(var j = 0; j < program.channels; j++) {
-            c.registerChannel(uuid.v1());
-        }
-
-        var endPointCount = 0;
-        c.on('pushendpoint', function(endpointUrl, channelID) {
-            testy("Created channel: %s", channelID);
-            var e = new EndPoint(http, c, endpointUrl, channelID, ++endPointCount);
-            var serverAckTime = 0;
-            e.on('result', resultHandler);
-            e.sendNextVersion()
-        });
-
-        c.once('open', handleClientOpen);
-        c.once('close', handleClientClose);
-        c.on('err_notification_empty', handleClientEmptyNotify);
-
-        stats.conn_attempted += 1;
-        c.start()
     })(i);
 }
 
