@@ -12,9 +12,8 @@ program
     .option('-s, --pushgoserver <server>', 'Push go server url, e.g., pushserver.test.com', 'push.services.mozilla.com')
     .option('-c, --clients <clients>', 'Number of client connections', Number, 1)
     .option('-C, --channels <channels>', 'Number of channels per client', Number, 1)
-    .option('-m, --minpingtime <minpingtime>', 'Minimum milliseconds between pings', Number, 500)
-    .option('-M, --maxpingtime <minpingtime>', 'Maximum milliseconds between pings', Number, 1000)
-    .option('-p, --pingsperchannel <pingsperchannel>', 'How many pings to send per channel 0 means infinite', Number, 0)
+    .option('-u, --minupdatetime <minupdatetime>', 'Minimum milliseconds between version updates', Number, 500)
+    .option('-U, --maxupdatetime <minpingtime>', 'Maximum milliseconds between version updates', Number, 1000)
     .option('-S, --ssl', "Use https")
     .parse(process.argv);
 
@@ -75,6 +74,10 @@ var stats = {
     , u_tXms     : 0
 };
 
+function random( min, max ) {
+    return Math.random() * ( max - min ) + min;
+}
+
 var updateTimes = [50, 100, 500, 1500, 5000, 10000];
 function resultHandler(result) {
     deep("*** RESULT: (%dms) %s | %s ***", 
@@ -97,13 +100,12 @@ function resultHandler(result) {
             stats.put_sent += 1;
             stats.put_failed += 1;
 
-            testy("PUT %d FAIL %s. HTTP %s %s, waiting 3s to send again", 
+            testy("PUT %d FAIL %s. HTTP %s %s", 
                     result.data.id, 
                     result.channelID,
                     result.data.code,
                     result.data.body
                 );
-            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, UPDATE_TIMEOUT), 3000);
             break;
 
         case 'GOT_VERSION_OK':
@@ -127,8 +129,7 @@ function resultHandler(result) {
                 stats.u_tXms += 1;
             }
 
-            testy("\\o/. ws lag: %dms, waiting 3s to send again", result.data);
-            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, UPDATE_TIMEOUT) , 3000);
+            testy("\\o/. ws lag: %dms", result.data);
             break;
 
         case 'ERR_VER_INVALID':
@@ -138,21 +139,28 @@ function resultHandler(result) {
                     result.data.got, 
                     result.data.expected
                 );
-
             break;
 
         case 'TIMEOUT':
             stats.update_outstanding -= 1;
             stats.update_timeout += 1;
             stats.u_tXms += 1;
-
-            testy('TIMEOUT, expired: %dms, waiting 3s to send again', result.data);
-            setTimeout(result.endpoint.sendNextVersion.bind(result.endpoint, UPDATE_TIMEOUT), 3000);
+            testy('TIMEOUT, expired: %dms', result.data);
             break;
 
         case 'ERR_NETWORK': // network issues?
             stats.update_net_error += 1;
+            testy('Network Error: %s', result.data);
             break;
+    }
+
+    if (result.status != "PUT_OK") {
+        var nextUpdate = Math.floor(random(program.minupdatetime, program.maxupdatetime));
+        testy("Waiting %dms to send another update", nextUpdate)
+        setTimeout(
+            result.endpoint.sendNextVersion.bind(result.endpoint, UPDATE_TIMEOUT), 
+            nextUpdate
+        );
     }
 }
 
