@@ -174,9 +174,25 @@ function handleClientOpen() {
     stats.conn_ok += 1;
 }
 
-function handleClientClose() {
+var connectionTimes = [5, 30, 60, 300, 600, 1800];
+function handleClientClose(timeConnected) {
     stats.conn_current -= 1;
     stats.conn_fail += 1;
+    var recorded = false;
+    
+    stats.c_count += 1;
+
+    for (var i=0; i<connectionTimes.length; i++) {
+        var s = Math.round(timeConnected/1000);
+        if (s <= connectionTimes[i]) {
+            stats['c_t' + connectionTimes[i] + 's'] += 1;
+            recorded = true; 
+            break;
+        }
+    }
+    if (recorded === false) {
+        stats.c_tXs += 1;
+    }
 }
 
 function handleClientEmptyNotify() {
@@ -204,6 +220,7 @@ setTimeout(function create() {
 
     c.once('open', handleClientOpen);
     c.once('close', handleClientClose);
+
     c.on('err_notification_empty', handleClientEmptyNotify);
 
     stats.conn_attempted += 1;
@@ -214,12 +231,6 @@ setTimeout(function create() {
     }
 
 }, CONNECT_THROTTLE);
-
-for (var i =0; i < program.clients; i++) {
-
-    (function(i) {
-    })(i);
-}
 
 webserver.startup(function(err, server) {
     debug('webserver')("Webserver listening on " + server.address().port);
