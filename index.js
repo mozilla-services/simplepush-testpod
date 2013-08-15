@@ -252,7 +252,7 @@ function createClient() {
 }
 
 setTimeout(function ensureEnoughClients() {
-    if (opening > 0) {
+    if (opening <= 0) {
         setTimeout(ensureEnoughClients, CONNECT_THROTTLE / 2);
         return;
     }
