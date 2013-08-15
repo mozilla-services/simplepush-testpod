@@ -219,31 +219,33 @@ var clientCount = 0;
 // ghetto async creation semaphore.. 
 var opening = OPEN_SEMAPHORE;
 
+function handleClientOpen() {
+    stats.conn_current += 1;
+    stats.conn_ok += 1;
+
+    opening++;
+}
+
+function createPushEndpoint(endpointUrl, channelID) {
+    testy("Created channel: %s", channelID);
+    var e = new EndPoint(http, this, endpointUrl, channelID);
+    e.on('result', resultHandler);
+    e.sendNextVersion();
+}
+
 function createClient() {
     clientCount += 1;
     testy("Creating client: %d", clientCount);
 
+    opening--;
     var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://');
     for(var j = 0; j < program.channels; j++) {
         c.registerChannel(uuid.v1());
     }
 
-    var endPointCount = 0;
-    c.on('pushendpoint', function(endpointUrl, channelID) {
-        testy("Created channel: %s", channelID);
-        var e = new EndPoint(http, c, endpointUrl, channelID);
-        var serverAckTime = 0;
-        e.on('result', resultHandler);
-        e.sendNextVersion();
-    });
+    c.on('pushendpoint', createPushEndpoint);
 
-    opening--;
-    c.once('open', function() {
-        stats.conn_current += 1;
-        stats.conn_ok += 1;
-
-        opening++;
-    });
+    c.once('open', handleClientOpen);
     c.once('close', handleClientClose);
 
     c.on('err_notification_empty', handleClientEmptyNotify);
