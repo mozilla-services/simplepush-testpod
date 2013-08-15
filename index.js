@@ -23,6 +23,8 @@ program
 var testy = debug('testy');
 var deep = debug('deep');
 
+var DOUT = (typeof(process.env.NODEBUG) == 'undefined');
+
 var startTime = moment();
 
 if (program.ssl) {
@@ -96,7 +98,7 @@ function random( min, max ) {
 
 var updateTimes = [50, 100, 500, 1500, 5000, 10000, 20000, 60000];
 function resultHandler(result) {
-    deep("*** RESULT: (%dms) %s | %s ***", 
+    if (DOUT) deep("*** RESULT: (%dms) %s | %s ***", 
         result.time, result.status, result.endpoint.channelID
     )
 
@@ -105,18 +107,18 @@ function resultHandler(result) {
             stats.put_sent += 1;
             stats.update_outstanding += 1;
 
-            testy("PUT #%d OK %s | %s", 
+            if (DOUT) testy("PUT #%d OK %s | %s", 
                     result.data.id, 
                     result.channelID, 
                     result.data.body
-            );
+                );
             break;
 
         case 'PUT_FAIL': // the server returned a non 200
             stats.put_sent += 1;
             stats.put_failed += 1;
 
-            testy("PUT %d FAIL %s. HTTP %s %s", 
+            if (DOUT) testy("PUT %d FAIL %s. HTTP %s %s", 
                     result.data.id, 
                     result.channelID,
                     result.data.code,
@@ -146,13 +148,13 @@ function resultHandler(result) {
                 stats.u_tXms += 1;
             }
 
-            testy("\\o/. ws lag: %dms", result.data);
+            if (DOUT) testy("\\o/. ws lag: %dms", result.data);
             break;
 
         case 'ERR_VER_INVALID':
             stats.update_outstanding -= 1;
             stats.update_invalid += 1;
-            testy("ERROR: Unexpected Version. Got %d, expected: %d", 
+            if (DOUT) testy("ERROR: Unexpected Version. Got %d, expected: %d", 
                     result.data.got, 
                     result.data.expected
                 );
@@ -161,7 +163,7 @@ function resultHandler(result) {
         case 'TIMEOUT':
             stats.update_outstanding -= 1;
             stats.update_timeout += 1;
-            testy('TIMEOUT, expired: %dms', result.data);
+            if (DOUT) testy('TIMEOUT, expired: %dms', result.data);
             break;
 
         case 'SKIP_TIMEOUT_CREATE':
@@ -170,13 +172,13 @@ function resultHandler(result) {
 
         case 'ERR_NETWORK': // network issues?
             stats.update_net_error += 1;
-            testy('Network Error: %s', result.data);
+            if (DOUT) testy('Network Error: %s', result.data);
             break;
     }
 
     if (result.status != "PUT_OK" && result.endpoint.client.connected !== false) {
         var nextUpdate = Math.floor(random(program.minupdatetime, program.maxupdatetime));
-        testy("Waiting %dms to send another update", nextUpdate)
+        if (DOUT) testy("Waiting %dms to send another update", nextUpdate)
         setTimeout(
             result.endpoint.sendNextVersion.bind(result.endpoint, UPDATE_TIMEOUT), 
             nextUpdate
@@ -220,7 +222,7 @@ var opening = 100;
 
 function createClient() {
     clientCount += 1;
-    testy("Creating client: %d", clientCount);
+    if (DOUT) testy("Creating client: %d", clientCount);
 
     var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://');
     for(var j = 0; j < program.channels; j++) {
@@ -229,7 +231,7 @@ function createClient() {
 
     var endPointCount = 0;
     c.on('pushendpoint', function(endpointUrl, channelID) {
-        testy("Created channel: %s", channelID);
+        if (DOUT) testy("Created channel: %s", channelID);
         var e = new EndPoint(http, c, endpointUrl, channelID);
         var serverAckTime = 0;
         e.on('result', resultHandler);
