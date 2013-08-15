@@ -84,6 +84,9 @@ var stats = {
     , u_t20000ms : 0
     , u_t60000ms : 0
     , u_tXms     : 0
+
+    // Misc
+    , skip_timeout : 0
 };
 
 function random( min, max ) {
@@ -158,6 +161,10 @@ function resultHandler(result) {
             stats.update_outstanding -= 1;
             stats.update_timeout += 1;
             testy('TIMEOUT, expired: %dms', result.data);
+            break;
+
+        case 'SKIP_TIMEOUT_CREATE':
+            stats.skip_timeout += 1;
             break;
 
         case 'ERR_NETWORK': // network issues?
