@@ -4,11 +4,11 @@ const
 
 var program = require('commander'),
     Client = require('./lib/Client'),
-    EndPoint = require('./lib/EndPoint')
+    EndPoint = require('./lib/EndPoint'),
     debug = require('debug'),
     uuid = require('node-uuid'),
     moment = require('moment'),
-    webserver = require('./webserver') ;
+    webserver = require('./webserver');
 
 program
     .version('0.0.1a')
@@ -21,7 +21,7 @@ program
     .parse(process.argv);
 
 var testy = debug('testy');
-var deep = debug('deep')
+var deep = debug('deep');
 
 var startTime = moment();
 
@@ -31,6 +31,7 @@ if (program.ssl) {
     var http = require('http');
 }
 
+http.localAgent = new http.Agent({rejectUnauthorized: false});
 /** 
  * This dirty little blob just gets updated
  * as the test runs and sent to the UI via websockets...
@@ -221,7 +222,7 @@ function createClient() {
     clientCount += 1;
     testy("Creating client: %d", clientCount);
 
-    var c = new Client(program.pushgoserver);
+    var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://');
     for(var j = 0; j < program.channels; j++) {
         c.registerChannel(uuid.v1());
     }
