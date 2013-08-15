@@ -6,6 +6,7 @@ define([
     , "model/Stats"
     , "view/NumberFormatted"
     , "view/NumberBucket"
+    , "view/Text"
 ], function(
     $
 
@@ -15,17 +16,35 @@ define([
     // views
     , NumberFormattedView
     , NumberBucketView
+    , TextView
 ) {
     var statsModel = new StatsModel();
 
     $(function() {
+
+        var textViews = [
+            "server"
+            , "minupdatetime"
+            , "maxupdatetime"
+            , "clients"
+            , "channels"
+        ];
+        
+        for(var i=0; i<textViews.length; i++) {
+            new TextView({
+                model: statsModel
+                , watch: textViews[i]
+                , el: '#' + textViews[i]
+            });
+        }
+
         // update the UI when the stats model changes
         var numViews = [
             "conn_current"
             , "test_seconds"
             , "conn_attempted"
             , "conn_ok"
-            , "conn_fail"
+            , "conn_drop"
             , "conn_rate"
             , "put_sent"
             , "put_failed"
@@ -111,7 +130,7 @@ define([
 
             setTimeout(startWS, connectInterval);
         };
-        connectInterval = Math.floor((connectInterval*1.5));
+        connectInterval = Math.min(Math.floor((connectInterval*1.5)), 5000);
     }
 
     startWS();

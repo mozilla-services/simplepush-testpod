@@ -9,11 +9,17 @@ define([
         defaults: {
             test_seconds: 0
 
+            , server        : ''
+            , minupdatetime : 0
+            , maxupdatetime : 0
+            , clients       : 0
+            , channels      : 0
+
             // Connection Stats
             , conn_current   : 0
             , conn_attempted : 0
             , conn_ok        : 0
-            , conn_fail      : 0
+            , conn_drop      : 0
 
             // Connection Times
             , c_count  : 0 

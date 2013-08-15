@@ -6,33 +6,57 @@ html
         script(data-main="/js/app", src="/js/lib/require.js")
     
     body
-        h1 Server: some.host.name 
+
+        h2 Config Options
+        table.stats
+            tr
+                td.stat Push Server
+                td
+                    span#server
+            tr
+                td.stat Min Update Time
+                td
+                    span#minupdatetime
+            tr
+                td.stat Max Update Time
+                td
+                    span#maxupdatetime
+            tr
+                td.stat Clients
+                td
+                    span#clients
+            tr
+                td.stat Chanels
+                td
+                    span#channels
+            tr
+                td.stat Test time
+                td
+                    span#test_seconds
+                    |  seconds 
+
+        h2 Websocket Statistics
 
         table.stats
             tr
                 td.stat WS Status
                 td 
                     span#connectionStatus.disconnected -
-            tr
-                td.stat Test time
-                td
-                    span#test_seconds
-                    |  seconds
 
-        h2 Websocket Statistics
 
         table.stats
             tr
                 td.stat WebSockets connected
                 td.num
-                    span#conn_current --
+                    span#conn_current
+
 
         h3 Connection Stats
         table.stats
             tr
                 th Attempted
                 th OK
-                th Fail
+                th Dropped
                 th Success Rate
             tr
                 td.num
@@ -40,7 +64,7 @@ html
                 td.num
                     span#conn_ok --
                 td.num
-                    span#conn_fail --
+                    span#conn_drop --
                 td.num
                     span#conn_rate --
                     span %

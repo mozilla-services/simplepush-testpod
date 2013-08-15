@@ -40,11 +40,17 @@ var stats = {
     // easier to send data to the backbone Model
     test_seconds: 0
 
+    , server        : program.pushgoserver
+    , minupdatetime : program.minupdatetime
+    , maxupdatetime : program.maxupdatetime
+    , clients       : program.clients
+    , channels      : program.channels
+
     // Connection Stats
     , conn_current   : 0
     , conn_attempted : 0
     , conn_ok        : 0
-    , conn_fail      : 0
+    , conn_drop      : 0
 
     // Connection Times
     , c_count  : 0 
@@ -168,16 +174,10 @@ function resultHandler(result) {
     }
 }
 
-
-function handleClientOpen() {
-    stats.conn_current += 1;
-    stats.conn_ok += 1;
-}
-
 var connectionTimes = [5, 30, 60, 300, 600, 1800];
 function handleClientClose(timeConnected) {
     stats.conn_current -= 1;
-    stats.conn_fail += 1;
+    stats.conn_drop += 1;
     var recorded = false;
     
     stats.c_count += 1;
@@ -190,9 +190,13 @@ function handleClientClose(timeConnected) {
             break;
         }
     }
+
     if (recorded === false) {
         stats.c_tXs += 1;
     }
+
+    // make sure we try to maintain program.clients target
+    createClient();
 }
 
 function handleClientEmptyNotify() {
@@ -200,7 +204,11 @@ function handleClientEmptyNotify() {
 }
 
 var clientCount = 0;
-setTimeout(function create() {
+
+// ghetto async creation lock.. 
+var opening = false;
+
+function createClient() {
     clientCount += 1;
     testy("Creating client: %d", clientCount);
 
@@ -212,25 +220,42 @@ setTimeout(function create() {
     var endPointCount = 0;
     c.on('pushendpoint', function(endpointUrl, channelID) {
         testy("Created channel: %s", channelID);
-        var e = new EndPoint(http, c, endpointUrl, channelID, ++endPointCount);
+        var e = new EndPoint(http, c, endpointUrl, channelID);
         var serverAckTime = 0;
         e.on('result', resultHandler);
         e.sendNextVersion()
     });
 
-    c.once('open', handleClientOpen);
+    opening = true;
+    c.once('open', function() {
+        stats.conn_current += 1;
+        stats.conn_ok += 1;
+
+        opening = false;
+    });
     c.once('close', handleClientClose);
 
     c.on('err_notification_empty', handleClientEmptyNotify);
 
     stats.conn_attempted += 1;
     c.start();
+};
 
-    if (clientCount < program.clients) {
-        setTimeout(create, CONNECT_THROTTLE);
+setTimeout(function ensureEnoughClients() {
+    if (opening == true) {
+        setTimeout(ensureEnoughClients, CONNECT_THROTTLE / 2);
+        return;
     }
 
-}, CONNECT_THROTTLE);
+    if(stats.conn_current < program.clients)  {
+        createClient();
+        setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
+        return;
+    }
+
+    setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
+}, 100);
+
 
 webserver.startup(function(err, server) {
     debug('webserver')("Webserver listening on " + server.address().port);
