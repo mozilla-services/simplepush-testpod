@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const 
-    CONNECT_THROTTLE=5 // ms per connection
+    CONNECT_THROTTLE = 5 // ms per connection
     , UPDATE_TIMEOUT = 30000 // in ms
     , OPEN_SEMAPHORE = 100;
 
@@ -56,6 +56,7 @@ var stats = {
     // Connection Stats
     , conn_current   : 0
     , conn_attempted : 0
+    , conn_waiting   : 0
     , conn_ok        : 0
     , conn_drop      : 0
 
@@ -220,14 +221,10 @@ function handleClientEmptyNotify() {
 
 var clientCount = 0;
 
-// ghetto async creation semaphore.. 
-var opening = OPEN_SEMAPHORE;
-
 function handleClientOpen() {
     stats.conn_current += 1;
     stats.conn_ok += 1;
-
-    opening++;
+    stats.conn_waiting -= 1;
 }
 
 function handleNewEndpoint(endpoint) {
@@ -236,12 +233,13 @@ function handleNewEndpoint(endpoint) {
     endpoint.sendNextVersion();
 }
 
+/*
 function createClient() {
     clientCount += 1;
     if (DOUT) testy("Creating client: %d", clientCount);
 
     opening--;
-    var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://', http);
+    var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://', http, program.channels);
     for(var j = 0; j < program.channels; j++) {
         c.registerChannel(uuid.v1());
     }
@@ -272,6 +270,48 @@ setTimeout(function ensureEnoughClients() {
     setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
 }, 100);
 
+*/
+
+/*
+ * Creating the thousands of websocket connections is generally
+ * the most expensive part. So what we want to do is create all 
+ * the objects first and then do the connections in batches
+ */
+if (DOUT) testy("Creating %d Fake UserAgent", program.clients);
+var UserAgents = [];
+for(var i=0; i<program.clients;i++) {
+    var c = new Client(
+        program.pushgoserver, 
+        program.ssl ? 'wss://' : 'ws://', 
+        http, 
+        program.channels
+    );
+
+    c.once('open', handleClientOpen);
+    c.once('close', handleClientClose);
+    c.on('err_notification_empty', handleClientEmptyNotify);
+    c.on('newendpoint', handleNewEndpoint);
+    UserAgents.push(c);
+}
+
+if (DOUT) testy("Connecting up %d UserAgent's in batches of %d", program.clients, OPEN_SEMAPHORE);
+var currentClients = 0;
+(function doNextBatch() {
+    var toConnect = Math.min(program.clients - currentClients, OPEN_SEMAPHORE);
+    if (DOUT) testy("Creating %d to %d", currentClients, currentClients + toConnect);
+
+    var k;
+    for(var i = 0; i<toConnect; i++) {
+        k = currentClients + i;
+        UserAgents[k].start();
+        stats.conn_waiting += 1;
+    }
+
+    currentClients += toConnect;
+    if (currentClients < program.clients) {
+        setTimeout(doNextBatch, CONNECT_THROTTLE);
+    }
+})();
 
 webserver.startup(function(err, server) {
     debug('webserver')("Webserver listening on " + server.address().port);

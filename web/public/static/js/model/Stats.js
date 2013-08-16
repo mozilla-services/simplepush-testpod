@@ -16,8 +16,9 @@ define([
             , channels      : 0
 
             // Connection Stats
-            , conn_current   : 0
             , conn_attempted : 0
+            , conn_waiting   : 0
+            , conn_current   : 0
             , conn_ok        : 0
             , conn_drop      : 0
 
