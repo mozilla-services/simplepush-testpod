@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const 
     CONNECT_THROTTLE=5 // ms per connection
     , UPDATE_TIMEOUT = 30000 // in ms
