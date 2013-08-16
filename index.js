@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const 
-    CONNECT_THROTTLE = 5 // ms per connection
+    CONNECT_THROTTLE = 2 // ms per connection
     , UPDATE_TIMEOUT = 30000 // in ms
     , OPEN_SEMAPHORE = 100;
 
@@ -24,6 +24,7 @@ program
     .parse(process.argv);
 
 var testy = debug('testy');
+var testyConnection = debug('testy:connect');
 var deep = debug('deep');
 
 var DOUT = (typeof(process.env.NODEBUG) == 'undefined');
@@ -210,9 +211,6 @@ function handleClientClose(timeConnected) {
     if (recorded === false) {
         stats.c_tXs += 1;
     }
-
-    // make sure we try to maintain program.clients target
-    createClient();
 }
 
 function handleClientEmptyNotify() {
@@ -232,45 +230,6 @@ function handleNewEndpoint(endpoint) {
     endpoint.on('result', resultHandler);
     endpoint.sendNextVersion();
 }
-
-/*
-function createClient() {
-    clientCount += 1;
-    if (DOUT) testy("Creating client: %d", clientCount);
-
-    opening--;
-    var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://', http, program.channels);
-    for(var j = 0; j < program.channels; j++) {
-        c.registerChannel(uuid.v1());
-    }
-
-    c.on('newendpoint', handleNewEndpoint);
-
-    c.once('open', handleClientOpen);
-    c.once('close', handleClientClose);
-
-    c.on('err_notification_empty', handleClientEmptyNotify);
-
-    stats.conn_attempted += 1;
-    c.start();
-}
-
-setTimeout(function ensureEnoughClients() {
-    if(stats.conn_current + (OPEN_SEMAPHORE - opening) >= program.clients) {
-        setTimeout(ensureEnoughClients, CONNECT_THROTTLE * 10);
-        return;
-    }
-
-    if (opening <= 0) {
-        setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
-        return;
-    }
-
-    createClient();
-    setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
-}, 100);
-
-*/
 
 /*
  * Creating the thousands of websocket connections is generally
@@ -295,21 +254,38 @@ for(var i=0; i<program.clients;i++) {
 }
 
 if (DOUT) testy("Connecting up %d UserAgent's in batches of %d", program.clients, OPEN_SEMAPHORE);
-var currentClients = 0;
-(function doNextBatch() {
-    var toConnect = Math.min(program.clients - currentClients, OPEN_SEMAPHORE);
-    if (DOUT) testy("Creating %d to %d", currentClients, currentClients + toConnect);
 
-    var k;
-    for(var i = 0; i<toConnect; i++) {
-        k = currentClients + i;
-        UserAgents[k].start();
-        stats.conn_waiting += 1;
+var clientCount = 0;
+var opening = 0;
+
+function semOpened() {
+    opening -= 1;
+}
+function semClosed() {
+    // just attempt to reopen the connection...
+    this.start();
+}
+
+(function openNextConnection() {
+    if (opening === OPEN_SEMAPHORE) {
+        if (DOUT) testyConnection("Too fast. Throttle for %dms", CONNECT_THROTTLE * 100);
+        setTimeout(openNextConnection, CONNECT_THROTTLE * 50);
+        return;
     }
 
-    currentClients += toConnect;
-    if (currentClients < program.clients) {
-        setTimeout(doNextBatch, CONNECT_THROTTLE);
+    if (DOUT) testyConnection("Starting User Agent: %d", clientCount);
+    UserAgents[clientCount].once('open', semOpened);
+    UserAgents[clientCount].once('close', semClosed);
+    UserAgents[clientCount].start();
+
+    stats.conn_attempted += 1;
+    stats.conn_waiting   += 1;
+    clientCount += 1; 
+    opening += 1;
+
+    // Not enough? keep going..
+    if (clientCount < program.clients) {
+        setTimeout(openNextConnection, CONNECT_THROTTLE);
     }
 })();
 
