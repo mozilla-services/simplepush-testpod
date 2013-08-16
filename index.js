@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const 
-    CONNECT_THROTTLE = 2 // ms per connection
+    CONNECT_THROTTLE = 1 // ms per connection
     , UPDATE_TIMEOUT = 30000 // in ms
     , OPEN_SEMAPHORE = 100;
 
@@ -268,8 +268,8 @@ function semClosed() {
 
 (function openNextConnection() {
     if (opening === OPEN_SEMAPHORE) {
-        if (DOUT) testyConnection("Too fast. Throttle for %dms", CONNECT_THROTTLE * 100);
-        setTimeout(openNextConnection, CONNECT_THROTTLE * 50);
+        if (DOUT) testyConnection("Too fast. Throttle for 1000ms");
+        setTimeout(openNextConnection, 1000);
         return;
     }
 
