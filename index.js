@@ -262,7 +262,7 @@ server.on('ERR_NETWORK', function(err) {
 server.on('TIMEOUT', function(channelID, timeoutTime) {
     stats.update_outstanding -= 1;
     stats.update_timeout += 1;
-    if (DOUT) testy('TIMEOUT, expired: %dms', result.data);
+    if (DOUT) testy('TIMEOUT, %s expired: %dms', channelID, timeoutTime);
 });
 
 /**
