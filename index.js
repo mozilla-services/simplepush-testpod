@@ -256,7 +256,7 @@ server.on('PUT_OK', function(channelID) {
 
 server.on('ERR_NETWORK', function(err) {
     stats.update_net_error += 1;
-    if (DOUT) testy('Network Error: %s', result.data);
+    testy('Network Error: %s', err);
 });
 
 server.on('TIMEOUT', function(channelID, timeoutTime) {
