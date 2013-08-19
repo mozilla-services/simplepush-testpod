@@ -6,6 +6,7 @@ const
     , OPEN_SEMAPHORE = 100;
 
 var program = require('commander'),
+    Server = require('./lib/Server'),
     Client = require('./lib/Client'),
     EndPoint = require('./lib/EndPoint'),
     debug = require('debug'),
@@ -36,7 +37,10 @@ if (program.ssl) {
     var http = require('http');
 }
 
+
 http.localAgent = new http.Agent({rejectUnauthorized: false});
+
+
 /** 
  * This dirty little blob just gets updated
  * as the test runs and sent to the UI via websockets...
@@ -106,30 +110,6 @@ function resultHandler(result) {
     )
 
     switch (result.status) {
-        case 'PUT_OK':
-            stats.put_sent += 1;
-            stats.update_outstanding += 1;
-
-            if (DOUT) testy("PUT #%d OK %s | %s", 
-                    result.data.id, 
-                    result.channelID, 
-                    result.data.body
-                );
-            break;
-
-        case 'PUT_FAIL': // the server returned a non 200
-            stats.put_sent += 1;
-            stats.put_failed += 1;
-
-            if (DOUT) testy("PUT %d FAIL %s. HTTP %s %s", 
-                    result.data.id, 
-                    result.channelID,
-                    result.data.code,
-
-                    result.data.body
-                );
-            break;
-
         case 'GOT_VERSION_OK':
             stats.update_outstanding -= 1;
             stats.update_received += 1;
@@ -163,22 +143,13 @@ function resultHandler(result) {
                 );
             break;
 
-        case 'TIMEOUT':
-            stats.update_outstanding -= 1;
-            stats.update_timeout += 1;
-            if (DOUT) testy('TIMEOUT, expired: %dms', result.data);
-            break;
-
         case 'SKIP_TIMEOUT_CREATE':
             stats.skip_timeout += 1;
             break;
 
-        case 'ERR_NETWORK': // network issues?
-            stats.update_net_error += 1;
-            if (DOUT) testy('Network Error: %s', result.data);
-            break;
     }
 
+    /*
     if (result.status != "PUT_OK" && result.endpoint.client.connected !== false) {
         var nextUpdate = Math.floor(random(program.minupdatetime, program.maxupdatetime));
         if (DOUT) testy("Waiting %dms to send another update", nextUpdate)
@@ -187,6 +158,7 @@ function resultHandler(result) {
             nextUpdate
         );
     }
+    */
 }
 
 var connectionTimes = [5, 30, 60, 300, 600, 1800];
@@ -233,7 +205,11 @@ function handleClientOpen() {
 function handleNewEndpoint(endpoint) {
     if (DOUT) testy("New Endpoint: %s", endpoint.channelID);
     endpoint.on('result', resultHandler);
-    endpoint.sendNextVersion();
+    //endpoint.sendNextVersion();
+}
+
+function handleClientRegistered(client) {
+    server.addClient(client);
 }
 
 function createClient() {
@@ -242,6 +218,7 @@ function createClient() {
 
     opening--;
     var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://', http);
+
     for(var j = 0; j < program.channels; j++) {
         c.registerChannel(uuid.v1());
     }
@@ -250,6 +227,7 @@ function createClient() {
 
     c.once('open', handleClientOpen);
     c.once('close', handleClientClose);
+    c.once('registered', handleClientRegistered);
 
     c.on('err_notification_empty', handleClientEmptyNotify);
 
@@ -257,6 +235,43 @@ function createClient() {
     c.start();
 }
 
+/** 
+ * SERVER - this controls sending out of requests
+ */
+var server = new Server(http, program.minupdatetime, program.maxupdatetime, 2000);
+server.start();
+
+server.on('PUT_FAIL', function(channelID, statusCode, body) { 
+    stats.put_sent += 1;
+    stats.put_failed += 1;
+
+    if (DOUT) testy("PUT_FAIL %s. HTTP %s %s", 
+            channelID,
+            statusCode,
+            body
+        );
+});
+
+server.on('PUT_OK', function(channelID) { 
+    stats.put_sent += 1;
+    stats.update_outstanding += 1;
+    if (DOUT) testy("PUT_OK %s", channelID);
+});
+
+server.on('ERR_NETWORK', function(err) {
+    stats.update_net_error += 1;
+    if (DOUT) testy('Network Error: %s', result.data);
+});
+
+server.on('TIMEOUT', function(channelID, timeoutTime) {
+    stats.update_outstanding -= 1;
+    stats.update_timeout += 1;
+    if (DOUT) testy('TIMEOUT, expired: %dms', result.data);
+});
+
+/**
+ * Let's start creating Clients! 
+ */
 setTimeout(function ensureEnoughClients() {
     if(stats.conn_current + (OPEN_SEMAPHORE - opening) >= program.clients) {
         setTimeout(ensureEnoughClients, CONNECT_THROTTLE * 10);
