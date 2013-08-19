@@ -234,8 +234,7 @@ function createClient() {
 /** 
  * SERVER - this controls sending out of requests
  */
-var server = new Server(http, program.minupdatetime, program.maxupdatetime, 2000);
-server.start();
+var server = new Server(http, program.minupdatetime, program.maxupdatetime, UPDATE_TIMEOUT);
 
 server.on('PUT_FAIL', function(channelID, statusCode, body) { 
     stats.put_sent += 1;
@@ -283,6 +282,15 @@ setTimeout(function ensureEnoughClients() {
     setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
 }, 100);
 
+var goServer = setInterval(function() {
+    // once we reach this point then we should start sending 
+    // update requests.
+    if (stats.conn_ok == program.clients) {
+        server.start();
+        clearInterval(goServer);
+    } 
+
+}, 2500);
 
 webserver.startup(function(err, server) {
     debug('webserver')("Webserver listening on " + server.address().port);
