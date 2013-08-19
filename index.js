@@ -60,6 +60,8 @@ var stats = {
     // Connection Stats
     , conn_current   : 0
     , conn_attempted : 0
+    , conn_wait      : 0 // wait for connection
+    , conn_wait_reg  : 0 // waiting for registration
     , conn_ok        : 0
     , conn_drop      : 0
 
@@ -186,7 +188,8 @@ var opening = OPEN_SEMAPHORE;
 
 function handleClientOpen() {
     stats.conn_current += 1;
-    stats.conn_ok += 1;
+    stats.conn_wait -= 1;
+    stats.conn_wait_reg += 1;
 
     opening++;
 }
@@ -198,6 +201,8 @@ function handleNewEndpoint(endpoint) {
 }
 
 function handleClientRegistered(client) {
+    stats.conn_wait_reg -= 1;
+    stats.conn_ok += 1;
     server.addClient(client);
 }
 
@@ -213,6 +218,8 @@ function createClient() {
     }
 
     c.on('newendpoint', handleNewEndpoint);
+
+    stats.conn_wait += 1;
 
     c.once('open', handleClientOpen);
     c.once('close', handleClientClose);

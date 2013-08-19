@@ -18,6 +18,8 @@ define([
             // Connection Stats
             , conn_current   : 0
             , conn_attempted : 0
+            , conn_wait      : 0
+            , conn_wait_reg  : 0
             , conn_ok        : 0
             , conn_drop      : 0
 

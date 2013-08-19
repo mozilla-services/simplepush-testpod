@@ -43,6 +43,8 @@ define([
             "conn_current"
             , "test_seconds"
             , "conn_attempted"
+            , "conn_wait"
+            , "conn_wait_reg"
             , "conn_ok"
             , "conn_drop"
             , "conn_rate"
