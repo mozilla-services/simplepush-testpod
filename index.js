@@ -22,6 +22,7 @@ program
     .option('-u, --minupdatetime <minupdatetime>', 'Minimum milliseconds between version updates', Number, 500)
     .option('-U, --maxupdatetime <minpingtime>', 'Maximum milliseconds between version updates', Number, 1000)
     .option('-S, --ssl', "Use https")
+    .option('-N, --noupdates', 'Disable sending updates. Only make websocket connections')
     .parse(process.argv);
 
 var testy = debug('testy');
@@ -56,6 +57,7 @@ var stats = {
     , clients       : program.clients
     , channels      : program.channels
     , timeout_time  : UPDATE_TIMEOUT
+    , send_updates  : (!!program.noupdates) ? "DISABLED" : "YES"
 
     // Connection Stats
     , conn_current   : 0
@@ -282,15 +284,17 @@ setTimeout(function ensureEnoughClients() {
     setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
 }, 100);
 
-var goServer = setInterval(function() {
-    // once we reach this point then we should start sending 
-    // update requests.
-    if (stats.conn_ok == program.clients) {
-        server.start();
-        clearInterval(goServer);
-    } 
+if (!!program.noupdates === false)   {
+    var goServer = setInterval(function() {
+        // once we reach this point then we should start sending 
+        // update requests.
+        if (stats.conn_ok == program.clients) {
+            server.start();
+            clearInterval(goServer);
+        } 
 
-}, 2500);
+    }, 2500);
+}
 
 webserver.startup(function(err, server) {
     debug('webserver')("Webserver listening on " + server.address().port);
