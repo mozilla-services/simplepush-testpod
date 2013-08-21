@@ -16,7 +16,7 @@ var program = require('commander'),
 
 program
     .version('0.0.1a')
-    .option('-s, --pushgoserver <server>', 'Push go server url, e.g., pushserver.test.com', 'push.services.mozilla.com')
+    .option('-s, --pushgoservers <server,server,server>', 'Push go server urls, use commas for multiple', 'push.services.mozilla.com')
     .option('-c, --clients <clients>', 'Number of client connections', Number, 1)
     .option('-C, --channels <channels>', 'Number of channels per client', Number, 1)
     .option('-u, --minupdatetime <minupdatetime>', 'Minimum milliseconds between version updates', Number, 500)
@@ -27,6 +27,7 @@ program
 
 var testy = debug('testy');
 var deep = debug('deep');
+var debugServer = debug('testy:server')
 
 var DOUT = (typeof(process.env.NODEBUG) == 'undefined');
 
@@ -51,7 +52,7 @@ var stats = {
     // easier to send data to the backbone Model
     test_seconds: 0
 
-    , server        : program.pushgoserver
+    , server        : program.pushgoservers
     , minupdatetime : program.minupdatetime
     , maxupdatetime : program.maxupdatetime
     , clients       : program.clients
@@ -208,12 +209,17 @@ function handleClientRegistered(client) {
     server.addClient(client);
 }
 
+var serverList = program.pushgoservers.split(',');
+
 function createClient() {
     clientCount += 1;
     if (DOUT) testy("Creating client: %d", clientCount);
 
     opening--;
-    var c = new Client(program.pushgoserver, program.ssl ? 'wss://' : 'ws://', http);
+
+    var serverName = serverList[Math.floor(random(0, serverList.length))];
+    debugServer("Creating new client on server: %s", serverName);
+    var c = new Client(serverName, program.ssl ? 'wss://' : 'ws://', http);
 
     for(var j = 0; j < program.channels; j++) {
         c.registerChannel(uuid.v1());
