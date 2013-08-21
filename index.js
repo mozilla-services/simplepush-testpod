@@ -25,6 +25,47 @@ program
     .option('-N, --noupdates', 'Disable sending updates. Only make websocket connections')
     .parse(process.argv);
 
+var serverList = program.pushgoservers.split(',');
+
+if (program.ssl) {
+    var http = require('https');
+} else {
+    var http = require('http');
+}
+
+/** 
+ * SERVER - this controls sending out of requests
+ */
+var appServer = new Server(http, serverList, program.minupdatetime, program.maxupdatetime, UPDATE_TIMEOUT);
+
+appServer.on('PUT_FAIL', function(channelID, statusCode, body) { 
+    stats.put_sent += 1;
+    stats.put_failed += 1;
+
+    if (DOUT) testy("PUT_FAIL %s. HTTP %s %s", 
+            channelID,
+            statusCode,
+            body
+        );
+});
+
+appServer.on('PUT_OK', function(channelID) { 
+    stats.put_sent += 1;
+    stats.update_outstanding += 1;
+    if (DOUT) testy("PUT_OK %s", channelID);
+});
+
+appServer.on('ERR_NETWORK', function(err) {
+    stats.update_net_error += 1;
+    testy('Network Error: %s', err);
+});
+
+appServer.on('TIMEOUT', function(channelID, timeoutTime) {
+    stats.update_outstanding -= 1;
+    stats.update_timeout += 1;
+    if (DOUT) testy('TIMEOUT, %s expired: %dms', channelID, timeoutTime);
+});
+
 var testy = debug('testy');
 var deep = debug('deep');
 var debugServer = debug('testy:server')
@@ -32,12 +73,6 @@ var debugServer = debug('testy:server')
 var DOUT = (typeof(process.env.NODEBUG) == 'undefined');
 
 var startTime = moment();
-
-if (program.ssl) {
-    var http = require('https');
-} else {
-    var http = require('http');
-}
 
 
 http.localAgent = new http.Agent({rejectUnauthorized: false});
@@ -206,10 +241,11 @@ function handleNewEndpoint(endpoint) {
 function handleClientRegistered(client) {
     stats.conn_wait_reg -= 1;
     stats.conn_ok += 1;
-    server.addClient(client);
+
+    // yah this is in the global scope..but oh well..
+    appServer.addClient(client);
 }
 
-var serverList = program.pushgoservers.split(',');
 
 function createClient() {
     clientCount += 1;
@@ -238,40 +274,6 @@ function createClient() {
     stats.conn_attempted += 1;
     c.start();
 }
-
-/** 
- * SERVER - this controls sending out of requests
- */
-var server = new Server(http, program.minupdatetime, program.maxupdatetime, UPDATE_TIMEOUT);
-
-server.on('PUT_FAIL', function(channelID, statusCode, body) { 
-    stats.put_sent += 1;
-    stats.put_failed += 1;
-
-    if (DOUT) testy("PUT_FAIL %s. HTTP %s %s", 
-            channelID,
-            statusCode,
-            body
-        );
-});
-
-server.on('PUT_OK', function(channelID) { 
-    stats.put_sent += 1;
-    stats.update_outstanding += 1;
-    if (DOUT) testy("PUT_OK %s", channelID);
-});
-
-server.on('ERR_NETWORK', function(err) {
-    stats.update_net_error += 1;
-    testy('Network Error: %s', err);
-});
-
-server.on('TIMEOUT', function(channelID, timeoutTime) {
-    stats.update_outstanding -= 1;
-    stats.update_timeout += 1;
-    if (DOUT) testy('TIMEOUT, %s expired: %dms', channelID, timeoutTime);
-});
-
 /**
  * Let's start creating Clients! 
  */
@@ -295,7 +297,7 @@ if (!!program.noupdates === false)   {
         // once we reach this point then we should start sending 
         // update requests.
         if (stats.conn_ok == program.clients) {
-            server.start();
+            appServer.start();
             clearInterval(goServer);
         } 
 
