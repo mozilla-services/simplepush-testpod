@@ -278,8 +278,11 @@ function createClient() {
  * Let's start creating Clients! 
  */
 setTimeout(function ensureEnoughClients() {
+
+    /* we have enough connections. check every so often to make new ones
+     * if old ones have died. */
     if(stats.conn_current + (OPEN_SEMAPHORE - opening) >= program.clients) {
-        setImmediate(ensureEnoughClients);
+        setTimeout(ensureEnoughClients, 3000);
         return;
     }
 
