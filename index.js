@@ -3,7 +3,7 @@
 const 
     CONNECT_THROTTLE=5 // ms per connection
     , UPDATE_TIMEOUT = 30000 // in ms
-    , OPEN_SEMAPHORE = 100;
+    , OPEN_SEMAPHORE = 200;
 
 var program = require('commander'),
     Server = require('./lib/Server'),
@@ -279,17 +279,18 @@ function createClient() {
  */
 setTimeout(function ensureEnoughClients() {
     if(stats.conn_current + (OPEN_SEMAPHORE - opening) >= program.clients) {
-        setTimeout(ensureEnoughClients, CONNECT_THROTTLE * 10);
+        setImmediate(ensureEnoughClients);
         return;
     }
 
     if (opening <= 0) {
-        setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
+        //setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
+        setImmediate(ensureEnoughClients);
         return;
     }
 
     createClient();
-    setTimeout(ensureEnoughClients, CONNECT_THROTTLE);
+    setImmediate(ensureEnoughClients);
 }, 100);
 
 if (!!program.noupdates === false)   {
