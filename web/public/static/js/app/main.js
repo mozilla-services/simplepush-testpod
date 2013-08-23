@@ -28,6 +28,7 @@ define([
             , "maxupdatetime"
             , "clients"
             , "channels"
+            , "workers"
         ];
         
         for(var i=0; i<textViews.length; i++) {

@@ -12,6 +12,7 @@ define([
             , server        : ''
             , minupdatetime : 0
             , maxupdatetime : 0
+            , workers       : 0
             , clients       : 0
             , channels      : 0
 
