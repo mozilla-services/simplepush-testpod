@@ -55,9 +55,19 @@ client.on('newendpoint', function(endpoint){
 
         var data = querystring.stringify({'version': newVer});
         var u = url.parse(endpoint.url);
+
+        if (program.serverb.indexOf(':') != -1) {
+            var hostname = program.serverb.split(':')[0];
+            var port = program.serverb.split(':')[1];
+        } else {
+            var hostname = program.serverb;
+            var port = 80;
+        }
+
+
         var opts = {
-            hostname: u.hostname,
-            port: u.port,
+            hostname: hostname,
+            port: port,
             method: 'PUT',
             path: u.path,
             headers: {
