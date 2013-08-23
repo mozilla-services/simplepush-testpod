@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const program = require('commander')
     , Client = require('../lib/Client')
     , uuid = require('node-uuid')
@@ -49,12 +51,12 @@ client.on('newendpoint', function(endpoint){
         var newVer = endpoint.version + 1;
         endpoint.expectedVersion = newVer;
 
-        debugClient("Sending ver: %d to %s", newVer, program.serverb);
+        debugClient("Sending ver: %d to %s", newVer, endpoint.url);
 
         var data = querystring.stringify({'version': newVer});
         var u = url.parse(endpoint.url);
         var opts = {
-            hostname: program.serverb,
+            hostname: u.hostname,
             port: u.port,
             method: 'PUT',
             path: u.path,
