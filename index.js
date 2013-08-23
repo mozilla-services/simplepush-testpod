@@ -42,7 +42,7 @@ appServer.on('PUT_FAIL', function(channelID, statusCode, body) {
     stats.put_sent += 1;
     stats.put_failed += 1;
 
-    if (DOUT) testy("PUT_FAIL %s. HTTP %s %s", 
+    testy("PUT_FAIL %s. HTTP %s %s", 
             channelID,
             statusCode,
             body
@@ -52,7 +52,7 @@ appServer.on('PUT_FAIL', function(channelID, statusCode, body) {
 appServer.on('PUT_OK', function(channelID) { 
     stats.put_sent += 1;
     stats.update_outstanding += 1;
-    if (DOUT) testy("PUT_OK %s", channelID);
+    testy("PUT_OK %s", channelID);
 });
 
 appServer.on('ERR_NETWORK', function(err) {
@@ -63,14 +63,13 @@ appServer.on('ERR_NETWORK', function(err) {
 appServer.on('TIMEOUT', function(channelID, timeoutTime) {
     stats.update_outstanding -= 1;
     stats.update_timeout += 1;
-    if (DOUT) testy('TIMEOUT, %s expired: %dms', channelID, timeoutTime);
+    testy('TIMEOUT, %s expired: %dms', channelID, timeoutTime);
 });
 
 var testy = debug('testy');
 var deep = debug('deep');
 var debugServer = debug('testy:server')
 
-var DOUT = (typeof(process.env.NODEBUG) == 'undefined');
 
 var startTime = moment();
 
@@ -145,7 +144,7 @@ function random( min, max ) {
 
 var updateTimes = [50, 100, 500, 1500, 5000, 10000, 20000, 60000];
 function resultHandler(result) {
-    if (DOUT) deep("*** RESULT: (%dms) %s | %s ***", 
+    deep("*** RESULT: (%dms) %s | %s ***", 
         result.time, result.status, result.endpoint.channelID
     )
 
@@ -171,13 +170,13 @@ function resultHandler(result) {
                 stats.u_tXms += 1;
             }
 
-            if (DOUT) testy("\\o/. ws lag: %dms", result.data);
+            testy("\\o/. ws lag: %dms", result.data);
             break;
 
         case 'ERR_VER_INVALID':
             stats.update_outstanding -= 1;
             stats.update_invalid += 1;
-            if (DOUT) testy("ERROR: Unexpected Version. Got %d, expected: %d", 
+            testy("ERROR: Unexpected Version. Got %d, expected: %d", 
                     result.data.got, 
                     result.data.expected
                 );
@@ -233,7 +232,7 @@ function handleClientOpen() {
 }
 
 function handleNewEndpoint(endpoint) {
-    if (DOUT) testy("New Endpoint: %s", endpoint.channelID);
+    testy("New Endpoint: %s", endpoint.channelID);
     endpoint.on('result', resultHandler);
     //endpoint.sendNextVersion();
 }
@@ -249,7 +248,7 @@ function handleClientRegistered(client) {
 
 function createClient() {
     clientCount += 1;
-    if (DOUT) testy("Creating client: %d", clientCount);
+    testy("Creating client: %d", clientCount);
 
     opening--;
 
