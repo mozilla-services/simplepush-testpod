@@ -51,7 +51,6 @@ client.on('newendpoint', function(endpoint){
         var newVer = endpoint.version + 1;
         endpoint.expectedVersion = newVer;
 
-        debugClient("Sending ver: %d to %s", newVer, endpoint.url);
 
         var data = querystring.stringify({'version': newVer});
         var u = url.parse(endpoint.url);
@@ -64,7 +63,6 @@ client.on('newendpoint', function(endpoint){
             var port = 80;
         }
 
-
         var opts = {
             hostname: hostname,
             port: port,
@@ -76,6 +74,8 @@ client.on('newendpoint', function(endpoint){
             },
             agent: http.localAgent
         };
+
+        debugClient("Sending ver: %d to %s:%s%s", newVer, hostname, port, u.path);
 
         var req = http.request(opts, function(res) {
             debugClient("PUT status", res.statusCode)
