@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var cp = require('child_process')
     , Message = require('./lib/Message')
     , webserver = require('./webserver')
