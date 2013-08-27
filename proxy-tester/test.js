@@ -78,7 +78,19 @@ client.on('newendpoint', function(endpoint){
         debugClient("Sending ver: %d to %s:%s%s", newVer, hostname, port, u.path);
 
         var req = http.request(opts, function(res) {
-            debugClient("PUT status", res.statusCode)
+            if (res.statusCode == 200) {
+                debugClient("PUT status %s", res.statusCode);
+            } else {
+                var body = '';
+                res.on('data', function(d) {
+                    body += d;
+                });
+                res.on('end', function() {
+                    debugClient("PUT status %s: %s", res.statusCode, body);
+
+                });
+            }
+
             res.on('error', function(e) {
                 debugClient("PUT NETWORK ERROR");
             });
