@@ -31,7 +31,7 @@ webserver.startup(function(err, server) {
     function onMessage( message) {
         switch(message.type) {
             case "ready": 
-                debugMaster(this.id, "ready");
+                debugMaster('Worker Ready');
                 this.send(new Message("start", program));
                 break;
 
@@ -41,7 +41,7 @@ webserver.startup(function(err, server) {
                 break;
 
             case 'stopped':
-                debugMaster(this.id, " stopped, ");
+                debugMaster('Worker Stopped');
                 break;
         }
     };
@@ -49,12 +49,19 @@ webserver.startup(function(err, server) {
     /*
      * start up the workers
      */
-    for (var i=0; i<program.workers; i++) {
+    function createWorker() {
         var w = cp.fork('./worker.js');
-        w.id = i;
-        w.stats = null;
         w.on('message', onMessage);
+        w.once('exit', function() {
+            debugMaster("Worker exited. Creating a new one");
+            workers[workers.indexOf(w)] = null;
+            createWorker();
+        })
+
         workers.push(w);
+    }
+    for (var i=0; i<program.workers; i++) {
+        createWorker();
     }
 
     /** 
@@ -82,7 +89,7 @@ webserver.startup(function(err, server) {
     setInterval(function() {
         var s = new Stats();
         for(var i=0; i< workers.length; i++) {
-            if (workers[i].stats == null) {
+            if (workers[i] == null || workers[i].stats == null) {
                 continue;
             }
             s.merge(workers[i].stats);
