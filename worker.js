@@ -100,7 +100,7 @@ function getStarted(program) {
      * SERVER - this controls sending out of requests
      */
     var appServer = new Server(
-            program.ssl,
+            program,
             http, serverList, 
             program.minupdatetime, program.maxupdatetime, 
             program.timeout

@@ -19,6 +19,7 @@ program
     .option('-U, --maxupdatetime <minpingtime>', 'Max ms between version updates/channel', Number, 1000)
     .option('-S, --ssl', "Use https")
     .option('-N, --noupdates', 'Disable sending updates. Only make websocket connections')
+    .option('-E, --useendpointurl', 'Default: false, Use endpoints returned by server, else randomly use a server in -s', Boolean, false)
     .option('-t, --timeout <timeout>', 'version update timeout in ms', Number, 30000)
     .parse(process.argv);
 
