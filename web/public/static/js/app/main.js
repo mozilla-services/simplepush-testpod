@@ -59,9 +59,14 @@ define([
             , "update_median"
             , "update_rate"
 
-            , "d_put_sent"
-            , "d_update_outstanding"
-            , "d_update_received"
+            , 'd_conn_attempted'
+            , 'd_conn_wait'
+            , 'd_conn_wait_reg'
+            , 'd_conn_ok'
+            , 'd_conn_drop'
+            , 'd_put_sent'
+            , 'd_update_outstanding'
+            , 'd_update_received'
         ];
 
         for(var i =0; i<numViews.length; i++) {

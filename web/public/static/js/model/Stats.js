@@ -36,9 +36,14 @@ define([
 
 
             // make it easy to see changes in values
-            , d_put_sent : 0
-            , d_update_outstanding: 0
-            , d_update_received : 0
+            , d_conn_attempted     : 0
+            , d_conn_wait          : 0
+            , d_conn_wait_reg      : 0
+            , d_conn_ok            : 0
+            , d_conn_drop          : 0
+            , d_put_sent           : 0
+            , d_update_outstanding : 0
+            , d_update_received    : 0
 
             // Update Stats
             , put_sent           : 0
@@ -82,11 +87,23 @@ define([
         }
         
         , setData: function(data) {
-            this.set({
-                  d_put_sent : data.put_sent - this.attributes.put_sent
-                , d_update_outstanding : data.update_outstanding - this.attributes.update_outstanding
-                , d_update_received : data.update_received - this.attributes.update_received
-            });
+
+            var deltas = [
+                  'conn_attempted'
+                , 'conn_wait'
+                , 'conn_wait_reg'
+                , 'conn_ok'
+                , 'conn_drop'
+                , 'put_sent'
+                , 'update_outstanding'
+                , 'update_received'
+            ];
+
+            var k;
+            for(var i=0; i<deltas.length; i++) {
+                k = deltas[i];
+                this.set("d_"+k, data[k] - this.attributes[k]);
+            }
 
             this.set(data);
         }
