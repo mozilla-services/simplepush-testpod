@@ -58,6 +58,10 @@ define([
             , "update_avg"
             , "update_median"
             , "update_rate"
+
+            , "d_put_sent"
+            , "d_update_outstanding"
+            , "d_update_received"
         ];
 
         for(var i =0; i<numViews.length; i++) {
@@ -121,7 +125,8 @@ define([
                 console.log("WS JSON ERROR", err);
                 return;
             }
-            statsModel.set(data);
+
+            statsModel.setData(data);
         };
 
         ws.onclose = function() {

@@ -34,6 +34,12 @@ define([
             , c_t1800s : 0 
             , c_tXs    : 0 
 
+
+            // make it easy to see changes in values
+            , d_put_sent : 0
+            , d_update_outstanding: 0
+            , d_update_received : 0
+
             // Update Stats
             , put_sent           : 0
             , put_failed         : 0
@@ -59,7 +65,6 @@ define([
         }
 
         , initialize: function(options) {
-
             this.on('change:conn_attempted change:conn_ok', function(m) {
                 var a = m.get('conn_attempted');
                 if (a == 0) return;
@@ -75,5 +80,16 @@ define([
                 m.set('update_rate', rate);
             });
         }
+        
+        , setData: function(data) {
+            this.set({
+                  d_put_sent : data.put_sent - this.attributes.put_sent
+                , d_update_outstanding : data.update_outstanding - this.attributes.update_outstanding
+                , d_update_received : data.update_received - this.attributes.update_received
+            });
+
+            this.set(data);
+        }
+
     });
 });
