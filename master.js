@@ -11,7 +11,7 @@ var cp = require('child_process')
 
 program
     .version('0.0.1a')
-    .option('-s, --pushgoservers <server,server,server>', 'Push go server urls, use commas for multiple', 'push.services.mozilla.com')
+    .option('-s, --pushgoservers <server,server,server>', 'WS servers, command separated list', function(v) { return v.split(',');})
     .option('-w, --workers <workers>', 'Num. of worker processes', Number, 1)
     .option('-c, --clients <clients>', 'Number of client connections / worker', Number, 1)
     .option('-C, --channels <channels>', 'Number of channels per client', Number, 1)
@@ -21,6 +21,7 @@ program
     .option('-N, --noupdates', 'Disable sending updates. Only make websocket connections')
     .option('-E, --useendpointurl', 'Default: false, Use endpoints returned by server, else randomly use a server in -s', Boolean, false)
     .option('-t, --timeout <timeout>', 'version update timeout in ms', Number, 30000)
+    .option('-P, --putendpoints <put1,put2,put5>', 'PUT endpoints, comma separated list. Invalid if -E, defaults to --pushgoservers', function(v) { return v.split(',');})
     .parse(process.argv);
 
 webserver.startup(function(err, server) {
@@ -73,7 +74,7 @@ webserver.startup(function(err, server) {
         // this should match web/public/static/js/model/Stats.js to make 
         // easier to send data to the backbone Model
         test_seconds: 0
-        , server        : program.pushgoservers
+        , server        : program.pushgoservers.join(', ')
         , minupdatetime : program.minupdatetime
         , maxupdatetime : program.maxupdatetime
         , workers       : program.workers

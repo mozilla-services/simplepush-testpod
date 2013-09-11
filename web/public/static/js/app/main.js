@@ -52,6 +52,7 @@ define([
             , "put_sent"
             , "put_failed"
             , "update_outstanding"
+            , "update_net_error"
             , "update_received"
             , "update_timeout"
             , "update_invalid"

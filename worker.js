@@ -38,7 +38,7 @@ function getStarted(program) {
     var testy = debug('testy');
     var deep = debug('deep');
     var debugServer = debug('testy:server')
-    var serverList = program.pushgoservers.split(',');
+    var serverList = program.pushgoservers;
 
     /** 
      * This dirty little blob just gets updated
@@ -89,31 +89,16 @@ function getStarted(program) {
         , skip_timeout : 0
     };
 
-    if (program.ssl) {
-        var http = require('https');
-    } else {
-        var http = require('http');
-    }
-    http.localAgent = new http.Agent({rejectUnauthorized: false});
-
     /** 
      * SERVER - this controls sending out of requests
      */
-    var appServer = new Server(
-            program,
-            http, serverList, 
-            program.minupdatetime, program.maxupdatetime, 
-            program.timeout
-    );
+    var appServer = new Server(program);
+    /*
     appServer.on('PUT_FAIL', function(channelID, statusCode, body) { 
         stats.put_sent += 1;
         stats.put_failed += 1;
 
-        testy("PUT_FAIL %s. HTTP %s %s", 
-                channelID,
-                statusCode,
-                body
-            );
+        testy("PUT_FAIL %s. HTTP %s %s", channelID, statusCode, body);
     });
     appServer.on('PUT_OK', function(channelID) { 
         stats.put_sent += 1;
@@ -129,6 +114,7 @@ function getStarted(program) {
         stats.update_timeout += 1;
         testy('TIMEOUT, %s expired: %dms', channelID, timeoutTime);
     });
+    */
 
     /**
      * Handles for various client callbacks 
@@ -141,8 +127,8 @@ function getStarted(program) {
 
         switch (result.status) {
             case 'GOT_VERSION_OK':
-                stats.update_outstanding -= 1;
-                stats.update_received += 1;
+                // update the stats here
+                appServer.recordEndpointOk();
 
                 var checkTime;
                 var counted = false;
@@ -178,6 +164,16 @@ function getStarted(program) {
                 break;
 
         }
+
+        // merge the stats together
+        stats.put_sent           = appServer.stats.put_sent;
+        stats.put_failed         = appServer.stats.put_failed;
+        stats.update_outstanding = appServer.stats.update_outstanding;
+        stats.update_received    = appServer.stats.update_received;
+        stats.update_timeout     = appServer.stats.update_timeout;
+        stats.update_invalid     = appServer.stats.update_invalid;
+        stats.update_net_error   = appServer.stats.update_net_error;
+        stats.update_err_empty   = appServer.stats.update_err_empty;
     }
 
     var connectionTimes = [5, 30, 60, 300, 600, 1800];
@@ -242,7 +238,7 @@ function getStarted(program) {
 
         var serverName = serverList[Math.floor(random(0, serverList.length))];
         debugServer("Creating new client on server: %s", serverName);
-        var c = new Client(serverName, program.ssl ? 'wss://' : 'ws://', http);
+        var c = new Client(serverName, program.ssl ? 'wss://' : 'ws://');
 
         for(var j = 0; j < program.channels; j++) {
             c.registerChannel(uuid.v1());
