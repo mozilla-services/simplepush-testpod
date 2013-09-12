@@ -9,9 +9,10 @@ var cp = require('child_process')
     , Stats = require('./lib/Stats')
     , program = require('commander');
 
+function split(v) { return v.split(',');}
 program
     .version('0.0.1a')
-    .option('-s, --pushgoservers <server,server,server>', 'WS servers, command separated list', function(v) { return v.split(',');})
+    .option('-s, --pushgoservers <server,server,server>', 'WS servers, command separated list', split)
     .option('-w, --workers <workers>', 'Num. of worker processes', Number, 1)
     .option('-c, --clients <clients>', 'Number of client connections / worker', Number, 1)
     .option('-C, --channels <channels>', 'Number of channels per client', Number, 1)
@@ -19,10 +20,15 @@ program
     .option('-U, --maxupdatetime <minpingtime>', 'Max ms between version updates/channel', Number, 1000)
     .option('-S, --ssl', "Use https")
     .option('-N, --noupdates', 'Disable sending updates. Only make websocket connections')
-    .option('-E, --useendpointurl', 'Default: false, Use endpoints returned by server, else randomly use a server in -s', Boolean, false)
     .option('-t, --timeout <timeout>', 'version update timeout in ms', Number, 30000)
-    .option('-P, --putendpoints <put1,put2,put5>', 'PUT endpoints, comma separated list. Invalid if -E, defaults to --pushgoservers', function(v) { return v.split(',');})
+    .option('-P, --putendpoint <(assigned|servers|override)>', 'default: assigned, PUT endpoint config', String, 'assigned')
+    .option('-O, --putoverride <server1,server2,...>', 'override servers, DNS roundrobin auto', split)
     .parse(process.argv);
+
+if (program.putendpoint == "override" && program.putoverride.length == 0) {
+    console.error("Require -O when -P is 'override'");
+    process.exit(1);
+}
 
 webserver.startup(function(err, server) {
     debug('webserver')("Webserver listening on " + server.address().port);
