@@ -10,13 +10,14 @@ cd simplepush-testpod
 npm install
 ```
 
-## Running a basic test
+## Running a basic test locally
 ```
 node master.js -S -s push.stage.mozaws.net \
     -w NUMWORKERS \
     -c NUMCLIENTS \
     -C CHANNELSPERCLIENT
 ```
+Go to: http://localhost:3000/
 
 
 ## How this tester works
